@@ -1,23 +1,25 @@
 package main
 
 import (
-	"gofermart/interal/config"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/mrechkunov/gofermart/interal/config"
+	"github.com/mrechkunov/gofermart/interal/handler"
+	"github.com/mrechkunov/gofermart/interal/logger"
 )
 
 func main() {
 	config.Init()
-	log.Println("reading config")
+	logger.Log.Infoln("reading config")
 	r := chi.NewRouter()
+	r.Post("/api/user/register", handler.Register)
 	//	r.Post("/", handler.PostHandler)
 	//	r.Get("/{id}", handler.GetHandler)
-	log.Println("starting web server at:", config.ConfigAdreses.ServerBindAdress)
-	err := http.ListenAndServe(config.ConfigAdreses.ServerBindAdress, r)
+	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
+	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, r)
 	if err != nil {
-		panic(err)
+		logger.Log.Errorln(err)
 	}
 
 }
