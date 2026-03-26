@@ -6,12 +6,32 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
-	"errors"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/mrechkunov/gofermart/interal/logger"
 )
 
-var secretKey = "secret key"
+const secretKey = "secret key"
+
+func generateToken(uLogin string) (string, error) {
+	// Создаем claims (данные токена)
+	claims := jwt.MapClaims{
+		"username": uLogin,
+		"exp":      time.Now().Add(time.Hour * 2).Unix(), // Срок действия 2 часа
+		"iat":      time.Now().Unix(),
+	}
+
+	// Создаем токен с методом подписи HMAC (HS256)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Подписываем токен
+	tokenString, err := token.SignedString([]byte(secretKey))
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
 
 // generate NEW UID, sign it and return cookieString
 func GenerateNewToken() string {
@@ -31,19 +51,14 @@ func GenerateNewToken() string {
 }
 
 // validate cookie signature
-func ValidateTokenSign(token string) error {
-	h := hmac.New(sha256.New, []byte(secretKey))
-	data, err := hex.DecodeString(token)
-	if err != nil {
-		logger.Log.Warnln("error while decoding incoming token", err)
+func ValidateToken(tokenString string) error {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+	if err != nil || !token.Valid {
 		return err
 	}
-	h.Write([]byte(data[:4]))
-	sign := h.Sum(nil)
-	if hmac.Equal(sign, data[4:]) {
-		return nil
-	}
-	return errors.New("not valid token signature")
+	return nil
 }
 
 // get ID from cookie
