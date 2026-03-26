@@ -53,7 +53,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	// storageUsers := repository.NewUsersStorage(config.DBconn)
 	// storageUsers.InsertRow()
-	w.Header().Set("Authorization", "Bearer FSDfrefsdFSDferf")
+	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	//записываем ответ
