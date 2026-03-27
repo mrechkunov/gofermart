@@ -27,7 +27,7 @@ func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
 	if err != nil {
 		logger.Log.Warnln(err)
 	}
-	err = su.DBconnection.QueryRow("SELECT * FROM users WHERE uLogin=$1", uLogin).Scan(&result)
+	err = su.DBconnection.QueryRow("SELECT * FROM users WHERE uLogin=$1", uLogin).Scan(&result.Login, &result.Password, &result.Bearer)
 	if err != nil {
 		logger.Log.Infoln(err)
 	}
