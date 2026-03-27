@@ -22,7 +22,7 @@ func NewOrdersStorage(DBconn *sql.DB) StorageOrders {
 }
 
 // запрос данных по номеру заказа
-func (so *StorageOrders) GetByNumber(number string) model.Orders {
+func (so *StorageOrders) GetByNumber(number int64) model.Orders {
 	var result model.Orders
 	fmt.Println("search in db by number", number)
 	err := so.DBconnection.Ping()

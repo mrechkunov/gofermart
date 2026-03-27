@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,37 +37,28 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	}
 	defer r.Body.Close()
 	var incomeOrder model.Orders
-	incomeOrder.Number = string(body)
+	incomeOrder.Number, err = strconv.ParseInt(string(body), 10, 64)
+	if err != nil {
+		fmt.Printf("Error during conversion: %v\n", err)
+		return
+	}
 	incomeOrder.CreatedBy = user.Login
-	incomeOrder.UploadedAt = time.Now().Truncate(time.Second)
+	incomeOrder.UploadedAt = time.Now().Truncate(time.Second).Unix()
 	incomeOrder.Status = "NEW"
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
-
-	fmt.Println("order from DB:", orderFromDB)
-	fmt.Println("order income:", incomeOrder)
-
 	if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
 		http.Error(w, "неверный формат номера заказа", http.StatusUnprocessableEntity)
 		return
 	}
 	if orderFromDB.CreatedBy == incomeOrder.CreatedBy {
 		http.Error(w, "номер заказа уже был загружен этим пользователем", http.StatusOK)
-		fmt.Println("-----------200----------")
-		fmt.Println("income order date:", incomeOrder.UploadedAt)
-		fmt.Println("from DB order date:", orderFromDB.UploadedAt)
-		fmt.Println("------------------------")
 		return
 	}
 	if orderFromDB.CreatedBy != incomeOrder.CreatedBy && orderFromDB.Number == incomeOrder.Number {
 		http.Error(w, "номер заказа уже был загружен другим пользователем", http.StatusConflict)
-		fmt.Println("-----------409----------")
-		fmt.Println("income order date:", incomeOrder.UploadedAt)
-		fmt.Println("from DB order date:", orderFromDB.UploadedAt)
-		fmt.Println("------------------------")
 		return
 	}
-
 	storageOrders.InsertOrder(incomeOrder)
 	w.Header().Set("content-type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusAccepted)

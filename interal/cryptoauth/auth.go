@@ -56,7 +56,8 @@ func EncryptPass(password string) string {
 	return hex.EncodeToString(encryptedPassword)
 }
 
-func ValidLuhnOrderNumber(number string) bool {
+func ValidLuhnOrderNumber(num int64) bool {
+	number := strconv.FormatInt(num, 10)
 	// убираем все пробелы в строке
 	number = strings.ReplaceAll(number, " ", "")
 	// проверяем что больше 2-х цифр
@@ -64,7 +65,7 @@ func ValidLuhnOrderNumber(number string) bool {
 		return false
 	}
 	sum := 0
-	// проходим с лева на право
+	// проходим слева направо
 	for i := len(number) - 1; i >= 0; i-- {
 		digit, err := strconv.Atoi(string(number[i]))
 		if err != nil {

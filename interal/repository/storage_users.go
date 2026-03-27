@@ -29,7 +29,7 @@ func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
 	}
 	err = su.DBconnection.QueryRow("SELECT u_login, u_password, u_bearer FROM users WHERE u_login=$1", uLogin).Scan(&result.Login, &result.Password, &result.Bearer)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("Запись не найдена")
+		logger.Log.Infoln("user is not exist in DB")
 	}
 	return result
 }
