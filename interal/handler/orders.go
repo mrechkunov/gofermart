@@ -38,7 +38,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	var incomeOrder model.Orders
 	incomeOrder.Number = string(body)
 	incomeOrder.CreatedBy = user.Login
-	incomeOrder.UploadedAt = time.Now()
+	incomeOrder.UploadedAt = time.Now().Truncate(time.Second)
 	incomeOrder.Status = "NEW"
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)

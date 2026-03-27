@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS orders (
     o_number VARCHAR(255) PRIMARY KEY,
     o_status VARCHAR(255) NOT NULL,
-    o_accural BIGINT NOT NULL,
+    o_accrual INT NOT NULL,
     uploaded_at TIMESTAMPTZ NOT NULL,
     created_by VARCHAR(255) NOT NULL
 );

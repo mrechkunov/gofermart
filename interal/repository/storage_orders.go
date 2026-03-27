@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -23,16 +24,18 @@ func NewOrdersStorage(DBconn *sql.DB) StorageOrders {
 // запрос данных по номеру заказа
 func (so *StorageOrders) GetByNumber(number string) model.Orders {
 	var result model.Orders
+	fmt.Println("search in db by number", number)
 	err := so.DBconnection.Ping()
 	if err != nil {
 		logger.Log.Warnln(err)
 	}
 	sqlStatement := `SELECT o_number, o_status, o_accrual, uploaded_at, created_by FROM orders
-		WHERE o_number =$1`
+		WHERE o_number = $1`
 	err = so.DBconnection.QueryRow(sqlStatement, number).Scan(&result.Number, &result.Status, &result.Accrual, &result.UploadedAt, &result.CreatedBy)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("Запись не найдена")
 	}
+	fmt.Println("result searching", result)
 	return result
 }
 
@@ -89,8 +92,9 @@ func (so *StorageOrders) InsertOrder(order model.Orders) error {
 	if err != nil {
 		logger.Log.Warnln(err)
 	}
+	fmt.Println("order to insert", order)
 	sqlStatement := `INSERT INTO orders 
-			(o_number, o_status, o_accural, uploaded_at, created_by) 
+			(o_number, o_status, o_accrual, uploaded_at, created_by) 
 			VALUES ($1, $2, $3, $4, $5)`
 	_, err = so.DBconnection.Exec(sqlStatement, order.Number, order.Status, order.Accrual, order.UploadedAt, order.CreatedBy)
 	if err != nil {
