@@ -4,6 +4,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -52,4 +54,32 @@ func EncryptPass(password string) string {
 	}
 	encryptedPassword := h.Sum(nil)
 	return hex.EncodeToString(encryptedPassword)
+}
+
+func ValidLuhnOrderNumber(number string) bool {
+	// убираем все пробелы в строке
+	number = strings.ReplaceAll(number, " ", "")
+	// проверяем что больше 2-х цифр
+	if len(number) <= 1 {
+		return false
+	}
+	sum := 0
+	// проходим с лева на право
+	for i := len(number) - 1; i >= 0; i-- {
+		digit, err := strconv.Atoi(string(number[i]))
+		if err != nil {
+			return false // если не цифра
+		}
+		// Удваиваем каждую вторую цифру начиная с самой правой -1
+		if (len(number)-1-i)%2 == 1 {
+			digit *= 2
+			if digit > 9 {
+				// если удвоение двухзначное вычитаем 9
+				digit -= 9
+			}
+		}
+		sum += digit
+	}
+	// номер заказа валиден если сумма делится без остатка на 10
+	return sum%10 == 0
 }

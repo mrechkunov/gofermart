@@ -18,6 +18,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
 	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
+	r.Post("/api/user/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Orders)))
 
 	//	r.Post("/", handler.PostHandler)
 	//	r.Get("/{id}", handler.GetHandler)
@@ -27,4 +28,5 @@ func main() {
 		logger.Log.Errorln(err)
 	}
 
+	config.DBconn.Close()
 }

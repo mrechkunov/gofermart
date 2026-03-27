@@ -17,7 +17,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	storage := repository.NewUsersStorage(config.DBconn)
+	storageUsers := repository.NewUsersStorage(config.DBconn)
 	// читаем тело запроса
 	var reqdata, user model.Users
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {
@@ -25,7 +25,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем свободный ли логин если занят вернуть ошибку
-	if storage.GetByLogin(reqdata.Login).Login == reqdata.Login {
+	if storageUsers.GetByLogin(reqdata.Login).Login == reqdata.Login {
 		http.Error(w, "login "+reqdata.Login+" is exist in DB", http.StatusConflict)
 		return
 	}
@@ -40,7 +40,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Bearer = tokenString
 	// записываем в БД данные пользователя
-	storage.InsertUser(user)
+	storageUsers.InsertUser(user)
 	// формируем ответ
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.Header().Set("Content-Type", "application/json")

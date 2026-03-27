@@ -17,7 +17,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	storage := repository.NewUsersStorage(config.DBconn)
+	storageUsers := repository.NewUsersStorage(config.DBconn)
 	var reqdata, user model.Users
 	// читаем Header Autorization и записываем его в поле token
 	user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
@@ -39,12 +39,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем пару логин пароль
-	if storage.GetByLogin(reqdata.Login).Password != cryptoauth.EncryptPass(reqdata.Password) {
+	if storageUsers.GetByLogin(reqdata.Login).Password != cryptoauth.EncryptPass(reqdata.Password) {
 		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
 		return
 	}
 	// проверяем валидность текущего токена, если не валиден, генерируем новый
-	if cryptoauth.ValidateToken(storage.GetByLogin(reqdata.Login).Bearer) != nil {
+	if cryptoauth.ValidateToken(storageUsers.GetByLogin(reqdata.Login).Bearer) != nil {
 		// генерируем token
 		var err error
 		user.Bearer, err = cryptoauth.GenerateToken(reqdata.Login)
@@ -57,7 +57,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	// шифруем переданный пароль
 	user.Password = cryptoauth.EncryptPass(reqdata.Password)
 	// записываем в БД данные пользователя
-	storage.UpdateUser(user)
+	storageUsers.UpdateUser(user)
 	// формируем ответ
 	w.Header().Set("Authorization", "Bearer "+user.Bearer)
 	w.Header().Set("Content-Type", "application/json")
