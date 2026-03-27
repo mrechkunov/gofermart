@@ -90,7 +90,7 @@ func (so *StorageOrders) InsertOrder(order model.Orders) error {
 		logger.Log.Warnln(err)
 	}
 	sqlStatement := `INSERT INTO orders 
-			(o_number, o_status, o_accrual, uploaded_at, created_by) 
+			(o_number, o_status, o_accural, uploaded_at, created_by) 
 			VALUES ($1, $2, $3, $4, $5)`
 	_, err = so.DBconnection.Exec(sqlStatement, order.Number, order.Status, order.Accrual, order.UploadedAt, order.CreatedBy)
 	if err != nil {
