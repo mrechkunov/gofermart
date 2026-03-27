@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -38,6 +39,7 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	incomeOrder.Number = string(body)
 	incomeOrder.CreatedBy = user.Login
 	incomeOrder.UploadedAt = time.Now()
+	incomeOrder.Status = "NEW"
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
 
@@ -53,6 +55,10 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "номер заказа уже был загружен другим пользователем", http.StatusConflict)
 		return
 	}
+	fmt.Println("------------------------")
+	fmt.Println("income order date:", incomeOrder.UploadedAt)
+	fmt.Println("from DB order date:", orderFromDB.UploadedAt)
+	fmt.Println("------------------------")
 	storageOrders.InsertOrder(incomeOrder)
 	w.Header().Set("content-type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusAccepted)
