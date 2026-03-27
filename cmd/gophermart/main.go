@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/mrechkunov/gofermart/interal/compressmiddleware"
 	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/handler"
 	"github.com/mrechkunov/gofermart/interal/logger"
@@ -15,7 +16,8 @@ func main() {
 
 	logger.Log.Infoln("reading config")
 	r := chi.NewRouter()
-	r.Post("/api/user/register", handler.Register)
+	r.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
+	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
 
 	//	r.Post("/", handler.PostHandler)
 	//	r.Get("/{id}", handler.GetHandler)

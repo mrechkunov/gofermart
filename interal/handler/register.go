@@ -18,20 +18,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storage := repository.NewUsersStorage(config.DBconn)
-	// // читаем Header Autorization
-	// authHeader := r.Header.Get("Authorization")
-	// if authHeader == "" {
-	// 	http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
-	// 	return
-	// }
-	// // Ожидаем формат "Bearer <token>" проверяем на валидность, если не валиден юзеру надо авторизироваться
-	// tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	// err := cryptoauth.ValidateToken(tokenString)
-	// if err != nil {
-	// 	http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-
 	// читаем тело запроса
 	var reqdata, user model.Users
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {

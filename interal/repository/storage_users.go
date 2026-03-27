@@ -34,9 +34,25 @@ func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
 	return result
 }
 
+// обновление данных в БЛ
+func (su *StorageUsers) UpdateUser(user model.Users) error {
+	err := su.DBconnection.Ping()
+	if err != nil {
+		logger.Log.Warnln(err)
+	}
+	sqlStatement := `UPDATE users 
+		SET ubearer = $1
+		WHERE ulogin = $2;`
+	_, err = su.DBconnection.Exec(sqlStatement, user.Bearer, user.Login)
+	if err != nil {
+		logger.Log.Errorln("error while update token in DB", err)
+		return err
+	}
+	return nil
+}
+
 // добавление данных в БД
 func (su *StorageUsers) InsertUser(user model.Users) error {
-	//var result model.Users
 	err := su.DBconnection.Ping()
 	if err != nil {
 		logger.Log.Warnln(err)
