@@ -34,6 +34,24 @@ func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
 	return result
 }
 
+// добавление данных в БД
+func (su *StorageUsers) InsertUser(user model.Users) error {
+	//var result model.Users
+	err := su.DBconnection.Ping()
+	if err != nil {
+		logger.Log.Warnln(err)
+	}
+	sqlStatement := `INSERT INTO users 
+			(uLogin, upassword, ubearer) 
+			VALUES ($1, $2, $3)`
+	_, err = su.DBconnection.Exec(sqlStatement, user.Login, user.Password, user.Bearer)
+	if err != nil {
+		logger.Log.Errorln("error while insert to db", err)
+		return err
+	}
+	return nil
+}
+
 func (su *StorageUsers) Close() error {
 	return su.DBconnection.Close()
 }
