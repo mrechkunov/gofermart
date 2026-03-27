@@ -49,16 +49,21 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	}
 	if orderFromDB.CreatedBy == incomeOrder.CreatedBy {
 		http.Error(w, "номер заказа уже был загружен этим пользователем", http.StatusOK)
+		fmt.Println("-----------200----------")
+		fmt.Println("income order date:", incomeOrder.UploadedAt)
+		fmt.Println("from DB order date:", orderFromDB.UploadedAt)
+		fmt.Println("------------------------")
 		return
 	}
 	if orderFromDB.CreatedBy != incomeOrder.CreatedBy && orderFromDB.Number == incomeOrder.Number {
 		http.Error(w, "номер заказа уже был загружен другим пользователем", http.StatusConflict)
+		fmt.Println("-----------409----------")
+		fmt.Println("income order date:", incomeOrder.UploadedAt)
+		fmt.Println("from DB order date:", orderFromDB.UploadedAt)
+		fmt.Println("------------------------")
 		return
 	}
-	fmt.Println("------------------------")
-	fmt.Println("income order date:", incomeOrder.UploadedAt)
-	fmt.Println("from DB order date:", orderFromDB.UploadedAt)
-	fmt.Println("------------------------")
+
 	storageOrders.InsertOrder(incomeOrder)
 	w.Header().Set("content-type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusAccepted)
