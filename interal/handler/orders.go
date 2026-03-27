@@ -43,6 +43,9 @@ func Orders(w http.ResponseWriter, r *http.Request) {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
 
+	fmt.Println("order from DB:", orderFromDB)
+	fmt.Println("order income:", incomeOrder)
+
 	if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
 		http.Error(w, "неверный формат номера заказа", http.StatusUnprocessableEntity)
 		return
