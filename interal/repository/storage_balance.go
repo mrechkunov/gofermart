@@ -57,8 +57,8 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	// Откат при ошибке (defer)
 	defer tx.Rollback()
 	// запись в таблицу транзакций
-	// подготовка данных
 
+	// подготовка данных
 	// generate NEW TransactionID
 	id := make([]byte, 4)
 	_, err = rand.Read(id)
@@ -69,6 +69,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	//amount cast to int
 	amount = amount * 100 // храним в БД копейки
 	created_at := time.Now().UnixNano()
+
 	sqlStatementTransactions := `INSERT INTO transactions 
 			(user_id, t_id, amount, order_id, created_at) 
 			VALUES ($1, $2, $3, $4, $5)`
@@ -81,7 +82,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	// апдейт таблицы с балансом
 	// подготовка данных
 	// если amount отрицательный то делаем два апдейта
-
 	sqlStatementBalance := `UPDATE balances 
 				SET current_balance = current_balance + $1,
 				updated_at = $2 
@@ -95,8 +95,9 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 		amountIntABS := math.Abs(float64(amount))
 		sqlStatementBalance := `UPDATE balances 
 				SET withdrawn_balance = withdrawn_balance + $1,
-				updated_at = $2;`
-		_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at)
+				updated_at = $2
+				WHERE user_id = $3;`
+		_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at, userID)
 		if err != nil {
 			return err // Rollback
 		}
@@ -109,6 +110,24 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	}
 
 	logger.Log.Infoln("Transaction added")
+	return nil
+}
+func (sb *StorageBalance) AddUserBalance(login string) error {
+	err := sb.DBconnection.Ping()
+	if err != nil {
+		logger.Log.Warnln(err)
+	}
+	currentBalance := 0
+	withdrawnBalance := 0
+	updated_at := time.Now().UnixNano()
+	sqlStatement := `INSERT INTO balances
+			(user_id, current_balance, withdrawn_balance, updated_at) 
+			VALUES ($1, $2, $3, $4)`
+	_, err = sb.DBconnection.Exec(sqlStatement, login, currentBalance, withdrawnBalance, updated_at)
+	if err != nil {
+		logger.Log.Errorln("error while insert new user`s balance to db", err)
+		return err
+	}
 	return nil
 }
 

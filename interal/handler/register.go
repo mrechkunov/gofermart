@@ -41,6 +41,8 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	user.Bearer = tokenString
 	// записываем в БД данные пользователя
 	storageUsers.InsertUser(user)
+	storageBalance := repository.NewBalanceStorage(config.DBconn)
+	storageBalance.AddUserBalance(user.Login)
 	// формируем ответ
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.Header().Set("Content-Type", "application/json")
