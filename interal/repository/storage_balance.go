@@ -82,7 +82,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.Transact
 }
 
 // добавление данных в БД
-func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int, orderID int64) error {
+func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int64, orderID int64) error {
 	err := sb.DBconnection.Ping()
 	if err != nil {
 		logger.Log.Warnln(err)

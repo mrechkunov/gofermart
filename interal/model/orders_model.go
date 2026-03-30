@@ -3,7 +3,7 @@ package model
 type Orders struct { // все данные по заказу
 	Number     int64  `json:"number" db:"o_number"`
 	Status     string `json:"status" db:"o_status"`
-	Accrual    int    `json:"accrual,omitempty" db:"o_accrual"`
+	Accrual    int64  `json:"accrual,omitempty" db:"o_accrual"`
 	UploadedAt int64  `json:"uploaded_at" db:"uploaded_at"`
 	CreatedBy  string `json:"created_by" db:"created_by"`
 }

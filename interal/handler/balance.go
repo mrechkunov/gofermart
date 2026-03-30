@@ -68,7 +68,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "на счету недостаточно средств", http.StatusPaymentRequired)
 		return
 	}
-	amountInt := int(withdrawOrder.Sum) * -100
+	amountInt := int64(withdrawOrder.Sum) * -100
 	orderInt, err := strconv.ParseInt(withdrawOrder.Order, 10, 64)
 	if err != nil {
 		logger.Log.Warnln("error while convert order number fron string to int64 (withdraw)")

@@ -78,7 +78,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		}
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
 		order.CreatedBy = storageOrders.GetByNumber(order.Number).CreatedBy
-		order.Accrual = int(respOrder.Accrual * 100) // храним в БД сумму в копейках
+		order.Accrual = int64(respOrder.Accrual * 100) // храним в БД сумму в копейках
 		if order.Accrual > 0 {
 			storageBalance := repository.NewBalanceStorage(config.DBconn)
 			err := storageBalance.TransactionAdd(ctx, order.CreatedBy, order.Accrual, order.Number)
