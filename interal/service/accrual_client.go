@@ -11,7 +11,7 @@ import (
 )
 
 func GetAccrual(number int64) model.AccrualOrder {
-	url := config.ConfigAddresses.AccuralSystemAddress + "/" + strconv.FormatInt(number, 10)
+	url := config.ConfigAddresses.AccuralSystemAddress + "/api/orders/" + strconv.FormatInt(number, 10)
 	logger.Log.Infoln("string uri to accrual:", url)
 
 	resp, err := http.Get(url)
@@ -23,6 +23,7 @@ func GetAccrual(number int64) model.AccrualOrder {
 	if resp.StatusCode != http.StatusOK {
 		logger.Log.Infoln("API request failed with status:", resp.Status)
 	}
+
 	var result model.AccrualOrder
 	err = json.NewDecoder(resp.Body).Decode(&result)
 	if err != nil {
