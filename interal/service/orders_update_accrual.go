@@ -76,6 +76,8 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if respOrder.Status != "REGISTERED" {
 			order.Status = respOrder.Status
 		}
+		storageOrders := repository.NewOrdersStorage(config.DBconn)
+		order.CreatedBy = storageOrders.GetByNumber(order.Number).CreatedBy
 		order.Accrual = int(respOrder.Accrual * 100) // храним в БД сумму в копейках
 		if order.Accrual > 0 {
 			storageBalance := repository.NewBalanceStorage(config.DBconn)
@@ -84,7 +86,6 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 				logger.Log.Warnln("error while transaction add at order update", err)
 			}
 		}
-		storageOrders := repository.NewOrdersStorage(config.DBconn)
 		storageOrders.UpdateOrder(order)
 	}
 }
