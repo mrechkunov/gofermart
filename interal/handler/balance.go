@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -26,6 +27,14 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 	login := storageUsers.GetByToken(authToken).Login
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	balance := storageBalance.GetByLogin(login)
+
+	fmt.Println("----------debug--------")
+	fmt.Println("CurrentBalance", balance.CurrentBalance)
+	fmt.Println("Updated_at", balance.Updated_at)
+	fmt.Println("UserID", balance.UserID)
+	fmt.Println("Withdrawn_balance", balance.Withdrawn_balance)
+	fmt.Println("----------------------")
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ
