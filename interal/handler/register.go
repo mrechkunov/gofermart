@@ -18,7 +18,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	defer storageUsers.Close()
 	// читаем тело запроса
 	var reqdata, user model.Users
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {

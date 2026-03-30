@@ -18,7 +18,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	defer storageUsers.Close()
 	var reqdata, user model.Users
 	// читаем Header Autorization и записываем его в поле token
 	user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")

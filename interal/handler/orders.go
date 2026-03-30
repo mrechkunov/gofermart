@@ -22,7 +22,6 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		storageUsers := repository.NewUsersStorage(config.DBconn)
-		defer storageUsers.Close()
 		var user model.Users
 		// читаем Header Autorization и записываем его в поле token
 		user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
@@ -49,7 +48,6 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		incomeOrder.UploadedAt = time.Now().UnixNano()
 		incomeOrder.Status = "NEW"
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
-		defer storageOrders.Close()
 		orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
 		if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
 			http.Error(w, "неверный формат номера заказа", http.StatusUnprocessableEntity)
@@ -83,9 +81,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
-	defer storageOrders.Close()
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	defer storageUsers.Close()
 	login := storageUsers.GetByToken(authToken).Login
 	ordersFromDB := storageOrders.GetByLogin(login)
 

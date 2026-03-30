@@ -148,7 +148,3 @@ func (sb *StorageBalance) AddUserBalance(login string) error {
 	}
 	return nil
 }
-
-func (sb *StorageBalance) Close() error {
-	return sb.DBconnection.Close()
-}

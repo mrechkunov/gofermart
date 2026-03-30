@@ -36,5 +36,4 @@ func main() {
 	}
 	close(chanToUpdate)
 	config.DBconn.Close()
-
 }

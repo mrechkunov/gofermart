@@ -27,10 +27,8 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	defer storageUsers.Close()
 	login := storageUsers.GetByToken(authToken).Login
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	defer storageBalance.Close()
 	balance := storageBalance.GetByLogin(login)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -51,7 +49,6 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	defer storageUsers.Close()
 	user := storageUsers.GetByToken(authToken)
 
 	// читаем тело запроса

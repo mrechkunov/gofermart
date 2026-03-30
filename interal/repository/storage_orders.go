@@ -102,7 +102,3 @@ func (so *StorageOrders) InsertOrder(order model.Orders) error {
 	}
 	return nil
 }
-
-func (so *StorageOrders) Close() error {
-	return so.DBconnection.Close()
-}
