@@ -106,7 +106,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	t_id := hex.EncodeToString(id)
 	created_at := time.Now().UnixNano()
 	var withdraw = false
-	if amount < 0 {
+	if amount <= 0 {
 		withdraw = true
 	}
 	sqlStatementTransactions := `INSERT INTO transactions 
