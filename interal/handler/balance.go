@@ -73,7 +73,10 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Log.Warnln("error while convert order number fron string to int64 (withdraw)")
 	}
-	storageBalance.TransactionAdd(context.Background(), user.Login, amountInt, orderInt)
+	err = storageBalance.TransactionAdd(context.Background(), user.Login, amountInt, orderInt)
+	if err != nil {
+		logger.Log.Warnln("error while transaction add at withdraw", err)
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
