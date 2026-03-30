@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -99,20 +100,15 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
 		respOrders = append(respOrders, respOrder)
 	}
-
-	// fmt.Println("user login:", login)
-	// for idx, order := range orders {
-	// 	fmt.Println("index:", idx)
-	// 	fmt.Println("order Number:", order.Number)
-	// 	fmt.Println("order Accrual:", order.Accrual)
-	// 	fmt.Println("order Uploaded at DB format:", order.UploadedAt)
-	// 	// Преобразование
-	// 	t := time.Unix(0, order.UploadedAt)
-	// 	fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339Nano))
-	// }
-
-	// выбираем из базы данных в слайс заказы пользователя с учетом сортировки
-	// меняем формат времени для вывода
+	fmt.Println("-------debuging--------")
+	fmt.Println("user login:", login)
+	for idx, order := range respOrders {
+		fmt.Println("index:", idx)
+		fmt.Println("order Number:", order.Number)
+		fmt.Println("order Accrual:", order.Accrual)
+		fmt.Println("order Uploaded at output format:", order.UploadedAt)
+	}
+	fmt.Println("----------------------")
 
 	// формируем батч, отправляем
 	w.Header().Set("Content-Type", "application/json")
