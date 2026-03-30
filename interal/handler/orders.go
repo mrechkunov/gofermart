@@ -79,5 +79,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
 		return
 	}
-
+	// выбираем из базы данных в слайс заказы пользователя с учетом сортировки
+	// меняем формат времени для вывода
+	// формируем батч, отправляем
 }

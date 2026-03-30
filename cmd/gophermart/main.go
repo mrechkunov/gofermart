@@ -17,7 +17,7 @@ func main() {
 
 	logger.Log.Infoln("reading config")
 	r := chi.NewRouter()
-	chanToUpdate := make(chan int64)
+	chanToUpdate := make(chan int64, 10)
 	go service.UpdateOrderWorker(chanToUpdate)
 	r.Route("/api/user/orders", func(r chi.Router) {
 		r.Get("/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))

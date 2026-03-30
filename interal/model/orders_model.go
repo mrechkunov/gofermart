@@ -8,4 +8,8 @@ type Orders struct {
 	CreatedBy  string `json:"created_by" db:"created_by"`
 }
 
-
+type AccrualOrder struct {
+	Order   string `json:"order"`
+	Status  string `json:"status"`
+	Accrual int    `json:"accrual,omitempty"`
+}
