@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 func UpdateOrderWorker(chanToUpdate chan int64) {
@@ -15,7 +14,7 @@ func UpdateOrderWorker(chanToUpdate chan int64) {
 
 			// идем к accrual получаем данные по номеру заказа
 
-			orderFromAccrual := service.GetAccrual(orderNumber)
+			orderFromAccrual := GetAccrual(orderNumber)
 
 			fmt.Println("data from Accrual", orderFromAccrual.Order, orderFromAccrual.Status, orderFromAccrual.Accrual)
 			// если accrual просит подождать, ждем и идем еще раз
