@@ -32,7 +32,7 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 	if err != nil {
 		logger.Log.Warnln(err)
 	}
-	var curBal, withdrawnBal int
+	var curBal, withdrawnBal int64
 	err = sb.DBconnection.QueryRow("SELECT user_id, current_balance, withdrawn_balance, updated_at FROM balances WHERE user_id=$1", uLogin).
 		Scan(&result.UserID, &curBal, &withdrawnBal, &result.Updated_at)
 	if err == sql.ErrNoRows {
@@ -64,7 +64,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.Transact
 	for rows.Next() {
 		var o model.TransactionWithdraw
 		var orderNumber int64
-		var amount int
+		var amount int64
 		var created_at int64
 		if err := rows.Scan(&orderNumber, &amount, &created_at); err != nil {
 			logger.Log.Errorln(err)
