@@ -44,7 +44,7 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 }
 
 // добавление данных в БД
-func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount float64, orderID int64) error {
+func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int, orderID int64) error {
 	err := sb.DBconnection.Ping()
 	if err != nil {
 		logger.Log.Warnln(err)
@@ -67,12 +67,12 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	}
 	t_id := hex.EncodeToString(id)
 	//amount cast to int
-	amountInt := int(amount * 100)
+	amount = amount * 100 // храним в БД копейки
 	created_at := time.Now().UnixNano()
 	sqlStatementTransactions := `INSERT INTO transactions 
 			(user_id, t_id, amount, order_id, created_at) 
 			VALUES ($1, $2, $3, $4, $5)`
-	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amountInt, orderID, created_at)
+	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amount, orderID, created_at)
 	if err != nil {
 		return err // Rollback
 	}
@@ -86,13 +86,13 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 				SET current_balance = current_balance + $1,
 				updated_at = $2 
 				WHERE user_id = $3;`
-	_, err = tx.ExecContext(ctx, sqlStatementBalance, amountInt, created_at, userID)
+	_, err = tx.ExecContext(ctx, sqlStatementBalance, amount, created_at, userID)
 	if err != nil {
 		return err // Rollback
 	}
 
-	if amountInt < 0 {
-		amountIntABS := math.Abs(float64(amountInt))
+	if amount < 0 {
+		amountIntABS := math.Abs(float64(amount))
 		sqlStatementBalance := `UPDATE balances 
 				SET withdrawn_balance = withdrawn_balance + $1,
 				updated_at = $2;`
