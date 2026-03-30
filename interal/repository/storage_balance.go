@@ -39,10 +39,26 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
+
+	fmt.Println("----------debug GET BY LOGIN--int------")
+	fmt.Println("CurrentBalance", curBal)
+	fmt.Println("Withdrawn_balance", withdrawnBal)
+	fmt.Println("----------------------")
+
 	result.CurrentBalance = float64(curBal)          // так как в бд храним и работаем с int преобразуем при запросе
 	result.Withdrawn_balance = float64(withdrawnBal) // так как в бд храним и работаем с int преобразуем при запросе
+
+	fmt.Println("----------debug GET BY LOGIN--float------")
+	fmt.Println("CurrentBalance", result.CurrentBalance)
+	fmt.Println("Withdrawn_balance", result.Withdrawn_balance)
+	fmt.Println("----------------------")
+
 	result.CurrentBalance = result.CurrentBalance / 100
 	result.Withdrawn_balance = result.Withdrawn_balance / 100
+	fmt.Println("----------debug GET BY LOGIN--float/100------")
+	fmt.Println("CurrentBalance", result.CurrentBalance)
+	fmt.Println("Withdrawn_balance", result.Withdrawn_balance)
+	fmt.Println("----------------------")
 	return result
 }
 
