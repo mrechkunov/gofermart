@@ -28,10 +28,10 @@ func UpdateOrderListener(chanToUpdate chan int64) {
 }
 
 func UpdateOrderAccrualWorker(number int64, wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer wg.Done() // сообщим в группу что мы закончили, когда закончим
 	url := config.ConfigAddresses.AccuralSystemAddress + "/api/orders/" + strconv.FormatInt(number, 10)
 	logger.Log.Infoln("string uri to accrual:", url)
-	isDone := false
+	isDone := false // это что бы
 	for !isDone {
 		resp, err := http.Get(url)
 		if err != nil {
@@ -56,6 +56,7 @@ func UpdateOrderAccrualWorker(number int64, wg *sync.WaitGroup) {
 
 		if resp.StatusCode != http.StatusOK {
 			logger.Log.Infoln("API request failed with status:", resp.Status)
+			continue
 		}
 
 		var respOrder model.AccrualOrder

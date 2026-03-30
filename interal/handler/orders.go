@@ -83,6 +83,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	storageUsers := repository.NewUsersStorage(config.DBconn)
 	login := storageUsers.GetByToken(authToken).Login
+	fmt.Println("user login:", login)
 	orders := storageOrders.GetByLogin(login)
 	for idx, order := range orders {
 		fmt.Println("index:", idx)
