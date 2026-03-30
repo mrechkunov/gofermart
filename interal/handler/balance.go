@@ -94,7 +94,7 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 	storageUsers := repository.NewUsersStorage(config.DBconn)
 	login := storageUsers.GetByToken(authToken).Login
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	withdrawals := storageBalance.GetTransacrionsByLogin(login)
+	withdrawals := storageBalance.GetTransactionsByLogin(login)
 	if len(withdrawals) == 0 {
 		http.Error(w, "no withdrawals in DB", http.StatusNoContent)
 		return

@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
-	"math"
 	"strconv"
 	"time"
 
@@ -45,7 +44,7 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 }
 
 // запрос транзакций по логину
-func (sb *StorageBalance) GetTransacrionsByLogin(uLogin string) []model.TransactionWithdraw {
+func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.TransactionWithdraw {
 	var result []model.TransactionWithdraw
 	err := sb.DBconnection.Ping()
 	if err != nil {
@@ -132,7 +131,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	}
 
 	if amount < 0 {
-		amountIntABS := int(math.Abs(float64(amount)))
+		amountIntABS := amount * -1
 		sqlStatementBalance := `UPDATE balances 
 				SET withdrawn_balance = withdrawn_balance + $1,
 				updated_at = $2
