@@ -45,7 +45,7 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		incomeOrder.CreatedBy = user.Login
-		incomeOrder.UploadedAt = time.Now().Truncate(time.Second).Unix()
+		incomeOrder.UploadedAt = time.Now().UnixNano()
 		incomeOrder.Status = "NEW"
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
 		orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
@@ -88,8 +88,10 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 	for idx, order := range orders {
 		fmt.Println("index:", idx)
 		fmt.Println("order Number:", order.Number)
+		fmt.Println("order Accrual:", order.Accrual)
 		fmt.Println("order Uploaded at DB format:", order.UploadedAt)
-		t := time.Unix(order.UploadedAt, 0)
+		// Преобразование
+		t := time.Unix(0, order.UploadedAt)
 		fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339))
 	}
 
