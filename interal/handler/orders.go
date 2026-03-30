@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -35,14 +34,14 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		//читаем тело запроса
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			http.Error(w, "Body reading error", http.StatusBadRequest)
+			http.Error(w, "body reading error", http.StatusBadRequest)
 			return
 		}
 		defer r.Body.Close()
 		var incomeOrder model.Orders
 		incomeOrder.Number, err = strconv.ParseInt(string(body), 10, 64)
 		if err != nil {
-			logger.Log.Infoln("Error during conversion string number to int64:", err)
+			logger.Log.Infoln("error during conversion string number to int64:", err)
 			return
 		}
 		incomeOrder.CreatedBy = user.Login
@@ -78,7 +77,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	err := cryptoauth.ValidateToken(authToken)
 	if err != nil {
-		http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
+		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
@@ -90,7 +89,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "no data in DB", http.StatusNoContent)
 		return
 	}
-
+	// формируем батч, отправляем
 	var respOrders []model.ResponceOrders
 	for _, orderFromDB := range ordersFromDB {
 		var respOrder model.ResponceOrders
@@ -100,17 +99,6 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
 		respOrders = append(respOrders, respOrder)
 	}
-	fmt.Println("-------debuging--------")
-	fmt.Println("user login:", login)
-	for idx, order := range respOrders {
-		fmt.Println("index:", idx)
-		fmt.Println("order Number:", order.Number)
-		fmt.Println("order Accrual:", order.Accrual)
-		fmt.Println("order Uploaded at output format:", order.UploadedAt)
-	}
-	fmt.Println("----------------------")
-
-	// формируем батч, отправляем
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ

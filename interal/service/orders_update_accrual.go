@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -13,21 +14,22 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func UpdateOrderListener(chanToUpdate chan int64) {
+func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {
 	{
+		ctxWithCancel := context.WithoutCancel(ctx)
 		// создаем группу
 		var wg sync.WaitGroup
 		for orderNumber := range chanToUpdate {
 			logger.Log.Infoln("Order number to Update from accrual:", orderNumber)
-			wg.Add(1)                                     // добавляем в группу запуск горутины
-			go UpdateOrderAccrualWorker(orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
+			wg.Add(1)                                                    // добавляем в группу запуск горутины
+			go UpdateOrderAccrualWorker(ctxWithCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
 		}
 		// ждем всех из группы
 		wg.Wait()
 	}
 }
 
-func UpdateOrderAccrualWorker(number int64, wg *sync.WaitGroup) {
+func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGroup) {
 	defer wg.Done() // сообщим в группу что мы закончили, когда закончим
 	url := config.ConfigAddresses.AccuralSystemAddress + "/api/orders/" + strconv.FormatInt(number, 10)
 	logger.Log.Infoln("string uri to accrual:", url)
