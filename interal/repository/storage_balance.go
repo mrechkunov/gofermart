@@ -86,7 +86,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	}
 	t_id := hex.EncodeToString(id)
 	//amount cast to int
-	amount = amount * 100 // храним в БД копейки
 	created_at := time.Now().UnixNano()
 
 	sqlStatementTransactions := `INSERT INTO transactions 
