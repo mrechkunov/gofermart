@@ -44,7 +44,7 @@ func (so *StorageOrders) GetByLogin(login string) []model.Orders {
 		logger.Log.Warnln(err)
 	}
 	sqlStatement := `SELECT o_number, o_status, o_accrual, uploaded_at, created_by FROM orders
-		WHERE created_by = $1 ORDER BY uploaded_ad DESC`
+		WHERE created_by = $1 ORDER BY uploaded_at DESC`
 
 	rows, err := so.DBconnection.Query(sqlStatement, login)
 	if err == sql.ErrNoRows {
