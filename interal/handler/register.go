@@ -43,6 +43,20 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	storageUsers.InsertUser(user)
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	storageBalance.AddUserBalance(user.Login)
+	// //test
+	// fmt.Println("add first begin")
+	// err = storageBalance.TransactionAdd(context.TODO(), user.Login, 23, 32)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println("add first end")
+	// fmt.Println("add second begin")
+	// err = storageBalance.TransactionAdd(context.TODO(), user.Login, -232, 33)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println("add second end")
+
 	// формируем ответ
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.Header().Set("Content-Type", "application/json")

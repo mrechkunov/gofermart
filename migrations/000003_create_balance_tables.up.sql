@@ -2,8 +2,8 @@
 -- Создание таблиц баланса
 
 CREATE TABLE IF NOT EXISTS transactions (
-    user_id VARCHAR(255) PRIMARY KEY,
-    t_id VARCHAR(255) NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    t_id VARCHAR(255) PRIMARY KEY,
     amount INT NOT NULL,
     order_id BIGINT NOT NULL,
     created_at BIGINT NOT NULL

@@ -28,7 +28,7 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	balance := storageBalance.GetByLogin(login)
 
-	fmt.Println("----------debug--------")
+	fmt.Println("----------debug balance handler--------")
 	fmt.Println("CurrentBalance", balance.CurrentBalance)
 	fmt.Println("Updated_at", balance.Updated_at)
 	fmt.Println("UserID", balance.UserID)

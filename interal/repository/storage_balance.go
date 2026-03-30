@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
+	"fmt"
 	"math"
 	"time"
 
@@ -82,6 +83,12 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	// апдейт таблицы с балансом
 	// подготовка данных
 	// если amount отрицательный то делаем два апдейта
+	fmt.Println("----------debug transaction updater--------")
+	fmt.Println("amount", amount)
+	fmt.Println("Updated_at", created_at)
+	fmt.Println("UserID", userID)
+	fmt.Println("----------------------")
+
 	sqlStatementBalance := `UPDATE balances 
 				SET current_balance = current_balance + $1,
 				updated_at = $2 
@@ -92,7 +99,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	}
 
 	if amount < 0 {
-		amountIntABS := math.Abs(float64(amount))
+		amountIntABS := int(math.Abs(float64(amount)))
 		sqlStatementBalance := `UPDATE balances 
 				SET withdrawn_balance = withdrawn_balance + $1,
 				updated_at = $2
