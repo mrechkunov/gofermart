@@ -30,8 +30,8 @@ func Init() {
 	ba := flag.String("a", "localhost:8080", "adress to server run")
 	as := flag.String("r", "", "accural system address")
 	mp := flag.String("m", "file://migrations", "default migration PATH")
-	//	cs := flag.String("d", "postgres://yapra:yaprapass@10.254.40.123:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
-	cs := flag.String("d", "postgres://yapra:yaprapass@localhost:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
+	cs := flag.String("d", "postgres://yapra:yaprapass@10.254.40.123:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
+	//cs := flag.String("d", "postgres://yapra:yaprapass@localhost:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
 	flag.Parse()
 
 	// если переиенные окружения установленны, берем их, иначе берем флаг

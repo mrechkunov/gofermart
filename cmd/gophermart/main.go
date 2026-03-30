@@ -27,9 +27,6 @@ func main() {
 	r.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
 	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
 	r.Get("/api/user/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
-
-	//	r.Post("/", handler.PostHandler)
-	//	r.Get("/{id}", handler.GetHandler)
 	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
 	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, r)
 	if err != nil {

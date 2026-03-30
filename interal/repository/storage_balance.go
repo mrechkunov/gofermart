@@ -105,6 +105,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	//Фиксация транзакции
 	if err := tx.Commit(); err != nil {
 		logger.Log.Errorln(err)
+		return err
 	}
 
 	logger.Log.Infoln("Transaction added")

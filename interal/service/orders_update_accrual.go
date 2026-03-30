@@ -67,6 +67,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if respOrder.Status == "PROCESSED" || respOrder.Status == "INVALID" {
 			isDone = true
 		}
+
 		var order model.Orders
 		order.Number, err = strconv.ParseInt(respOrder.Order, 10, 64)
 		if err != nil {
@@ -78,7 +79,10 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		order.Accrual = int(respOrder.Accrual * 100) // храним в БД сумму в копейках
 		if order.Accrual > 0 {
 			storageBalance := repository.NewBalanceStorage(config.DBconn)
-			storageBalance.TransactionAdd(ctx, order.CreatedBy, order.Accrual, order.Number)
+			err := storageBalance.TransactionAdd(ctx, order.CreatedBy, order.Accrual, order.Number)
+			if err != nil {
+				logger.Log.Warnln("error while transaction add at order update", err)
+			}
 		}
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
 		storageOrders.UpdateOrder(order)
