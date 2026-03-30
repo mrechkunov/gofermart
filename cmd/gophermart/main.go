@@ -28,6 +28,7 @@ func main() {
 	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
 	r.Get("/api/user/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
 	r.Post("/api/user/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw)))
+	r.Get("/api/user/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals)))
 
 	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
 	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, r)

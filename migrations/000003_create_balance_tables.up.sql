@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     t_id VARCHAR(255) PRIMARY KEY,
     amount INT NOT NULL,
     order_id BIGINT NOT NULL,
+    withdraw BOOLEAN NOT NULL,
     created_at BIGINT NOT NULL
 );
 -- Базовый индекс для поиска по номеру клиента

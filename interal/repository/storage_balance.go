@@ -5,8 +5,8 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
-	"fmt"
 	"math"
+	"strconv"
 	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -39,26 +39,46 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
+	result.CurrentBalance = float64(curBal) / 100          // так как в бд храним и работаем с int преобразуем при запросе
+	result.Withdrawn_balance = float64(withdrawnBal) / 100 // так как в бд храним и работаем с int преобразуем при запросе
+	return result
+}
 
-	fmt.Println("----------debug GET BY LOGIN--int------")
-	fmt.Println("CurrentBalance", curBal)
-	fmt.Println("Withdrawn_balance", withdrawnBal)
-	fmt.Println("----------------------")
+// запрос транзакций по логину
+func (sb *StorageBalance) GetTransacrionsByLogin(uLogin string) []model.TransactionWithdraw {
+	var result []model.TransactionWithdraw
+	err := sb.DBconnection.Ping()
+	if err != nil {
+		logger.Log.Warnln(err)
+	}
+	sqlStatement := `SELECT order_id, amount, created_at FROM transactions
+		WHERE user_id = $1 AND withdraw is true ORDER BY created_at DESC`
 
-	result.CurrentBalance = float64(curBal)          // так как в бд храним и работаем с int преобразуем при запросе
-	result.Withdrawn_balance = float64(withdrawnBal) // так как в бд храним и работаем с int преобразуем при запросе
-
-	fmt.Println("----------debug GET BY LOGIN--float------")
-	fmt.Println("CurrentBalance", result.CurrentBalance)
-	fmt.Println("Withdrawn_balance", result.Withdrawn_balance)
-	fmt.Println("----------------------")
-
-	result.CurrentBalance = result.CurrentBalance / 100
-	result.Withdrawn_balance = result.Withdrawn_balance / 100
-	fmt.Println("----------debug GET BY LOGIN--float/100------")
-	fmt.Println("CurrentBalance", result.CurrentBalance)
-	fmt.Println("Withdrawn_balance", result.Withdrawn_balance)
-	fmt.Println("----------------------")
+	rows, err := sb.DBconnection.Query(sqlStatement, uLogin)
+	if err == sql.ErrNoRows {
+		logger.Log.Infoln("withdraw orders for user", uLogin, "is not exist in DB")
+	}
+	if err != nil {
+		logger.Log.Warnln("error while select transactions by login from DB", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var o model.TransactionWithdraw
+		var orderNumber int64
+		var amount int
+		var created_at int64
+		if err := rows.Scan(&orderNumber, &amount, &created_at); err != nil {
+			logger.Log.Errorln(err)
+		}
+		o.OrderNumber = strconv.FormatInt(orderNumber, 10)
+		o.Sum = float64(amount) / 100
+		o.Processed_at = time.Unix(0, created_at).Format(time.RFC3339)
+		result = append(result, o)
+	}
+	// Проверка на ошибки после цикла
+	if err = rows.Err(); err != nil {
+		logger.Log.Fatal(err)
+	}
 	return result
 }
 
@@ -85,13 +105,15 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 		logger.Log.Infoln("error while generate TransactionID", err)
 	}
 	t_id := hex.EncodeToString(id)
-	//amount cast to int
 	created_at := time.Now().UnixNano()
-
+	var withdraw = false
+	if amount < 0 {
+		withdraw = true
+	}
 	sqlStatementTransactions := `INSERT INTO transactions 
-			(user_id, t_id, amount, order_id, created_at) 
-			VALUES ($1, $2, $3, $4, $5)`
-	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amount, orderID, created_at)
+			(user_id, t_id, amount, order_id, created_at, withdraw) 
+			VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amount, orderID, created_at, withdraw)
 	if err != nil {
 		return err // Rollback
 	}

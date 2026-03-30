@@ -6,3 +6,9 @@ type Balance struct { // данные по балансу прльзовател
 	Withdrawn_balance float64 `json:"withdrawn,omitempty"`
 	Updated_at        int64
 }
+
+type TransactionWithdraw struct {
+	OrderNumber  string  `json:"order"`
+	Sum          float64 `json:"sum"`
+	Processed_at string  `json:"processed_at"`
+}
