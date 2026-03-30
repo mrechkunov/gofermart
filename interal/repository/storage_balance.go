@@ -39,8 +39,10 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
-	result.CurrentBalance = float64(curBal / 100)          // так как в бд храним и работаем с int преобразуем при запросе
-	result.Withdrawn_balance = float64(withdrawnBal / 100) // так как в бд храним и работаем с int преобразуем при запросе
+	result.CurrentBalance = float64(curBal)          // так как в бд храним и работаем с int преобразуем при запросе
+	result.Withdrawn_balance = float64(withdrawnBal) // так как в бд храним и работаем с int преобразуем при запросе
+	result.CurrentBalance = result.CurrentBalance / 100
+	result.Withdrawn_balance = result.Withdrawn_balance / 100
 	return result
 }
 
