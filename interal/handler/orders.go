@@ -92,7 +92,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("order Uploaded at DB format:", order.UploadedAt)
 		// Преобразование
 		t := time.Unix(0, order.UploadedAt)
-		fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339))
+		fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339Nano))
 	}
 
 	// выбираем из базы данных в слайс заказы пользователя с учетом сортировки
