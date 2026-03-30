@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -79,6 +80,18 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
 		return
 	}
+	storageOrders := repository.NewOrdersStorage(config.DBconn)
+	storageUsers := repository.NewUsersStorage(config.DBconn)
+	login := storageUsers.GetByToken(authToken).Login
+	orders := storageOrders.GetByLogin(login)
+	for idx, order := range orders {
+		fmt.Println("index:", idx)
+		fmt.Println("order Number:", order.Number)
+		fmt.Println("order Uploaded at DB format:", order.UploadedAt)
+		t := time.Unix(order.UploadedAt, 0)
+		fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339))
+	}
+
 	// выбираем из базы данных в слайс заказы пользователя с учетом сортировки
 	// меняем формат времени для вывода
 	// формируем батч, отправляем

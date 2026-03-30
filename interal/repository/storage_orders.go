@@ -31,13 +31,13 @@ func (so *StorageOrders) GetByNumber(number int64) model.Orders {
 		WHERE o_number = $1`
 	err = so.DBconnection.QueryRow(sqlStatement, number).Scan(&result.Number, &result.Status, &result.Accrual, &result.UploadedAt, &result.CreatedBy)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("Запись не найдена")
+		logger.Log.Infoln("order with number ", number, "is not exist in DB")
 	}
 	return result
 }
 
 // запрос данных по логину пользователя
-func (so *StorageOrders) GetByLogin(login int) []model.Orders {
+func (so *StorageOrders) GetByLogin(login string) []model.Orders {
 	var result []model.Orders
 	err := so.DBconnection.Ping()
 	if err != nil {
@@ -48,7 +48,7 @@ func (so *StorageOrders) GetByLogin(login int) []model.Orders {
 
 	rows, err := so.DBconnection.Query(sqlStatement, login)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("Запись не найдена")
+		logger.Log.Infoln("orders created by user ", login, "is not exist in DB")
 	}
 	defer rows.Close()
 	for rows.Next() {
