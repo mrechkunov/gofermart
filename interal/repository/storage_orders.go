@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -24,7 +23,6 @@ func NewOrdersStorage(DBconn *sql.DB) StorageOrders {
 // запрос данных по номеру заказа
 func (so *StorageOrders) GetByNumber(number int64) model.Orders {
 	var result model.Orders
-	fmt.Println("search in db by number", number)
 	err := so.DBconnection.Ping()
 	if err != nil {
 		logger.Log.Warnln(err)
@@ -35,7 +33,6 @@ func (so *StorageOrders) GetByNumber(number int64) model.Orders {
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("Запись не найдена")
 	}
-	fmt.Println("result searching", result)
 	return result
 }
 
@@ -92,7 +89,6 @@ func (so *StorageOrders) InsertOrder(order model.Orders) error {
 	if err != nil {
 		logger.Log.Warnln(err)
 	}
-	fmt.Println("order to insert", order)
 	sqlStatement := `INSERT INTO orders 
 			(o_number, o_status, o_accrual, uploaded_at, created_by) 
 			VALUES ($1, $2, $3, $4, $5)`

@@ -65,6 +65,7 @@ func Init() {
 		logger.Log.Errorln("error while connecting to DB while configre service", err)
 	}
 	migrations(DBconn)
+
 }
 func NewConnect() (*sql.DB, error) {
 	db, err := sql.Open("pgx", ConfigAddresses.DBConnStr)

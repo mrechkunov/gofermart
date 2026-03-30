@@ -9,6 +9,7 @@ import (
 	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/handler"
 	"github.com/mrechkunov/gofermart/interal/logger"
+	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 func main() {
@@ -16,9 +17,14 @@ func main() {
 
 	logger.Log.Infoln("reading config")
 	r := chi.NewRouter()
+	chanToUpdate := make(chan int64)
+	go service.UpdateOrderWorker(chanToUpdate)
+	r.Route("/api/user/orders", func(r chi.Router) {
+		r.Get("/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
+		r.Post("/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(chanToUpdate))))
+	})
 	r.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
 	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
-	r.Post("/api/user/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Orders)))
 
 	//	r.Post("/", handler.PostHandler)
 	//	r.Get("/{id}", handler.GetHandler)
@@ -27,5 +33,7 @@ func main() {
 	if err != nil {
 		logger.Log.Errorln(err)
 	}
+	close(chanToUpdate)
 	config.DBconn.Close()
+
 }

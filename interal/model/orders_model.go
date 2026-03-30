@@ -7,3 +7,5 @@ type Orders struct {
 	UploadedAt int64  `json:"uploaded_at" db:"uploaded_at"`
 	CreatedBy  string `json:"created_by" db:"created_by"`
 }
+
+
