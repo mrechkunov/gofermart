@@ -18,21 +18,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	storageUsers := repository.NewUsersStorage(config.DBconn)
+	defer storageUsers.Close()
 	var reqdata, user model.Users
 	// читаем Header Autorization и записываем его в поле token
 	user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// if authHeader == "" {
-	// 	http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
-	//  	return
-	//  }
-	// // Ожидаем формат "Bearer <token>" проверяем на валидность, если не валиден юзеру надо авторизироваться
-	// tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	// err := cryptoauth.ValidateToken(tokenString)
-	// if err != nil {
-	// 	http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
-	// 	return
-	// }
-
 	// читаем тело запроса
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

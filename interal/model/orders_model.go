@@ -20,3 +20,8 @@ type ResponceOrders struct { // то что отдает наш сервис п�
 	Accrual    float64 `json:"accrual,omitempty"`
 	UploadedAt string  `json:"uploaded_at"`
 }
+
+type WithdrawOrder struct {
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
+}
