@@ -71,7 +71,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.Transact
 			logger.Log.Errorln(err)
 		}
 		o.OrderNumber = strconv.FormatInt(orderNumber, 10)
-		o.Sum = float64(amount) / 100
+		o.Sum = float64(amount) / -100
 		o.Processed_at = time.Unix(0, created_at).Format(time.RFC3339)
 		result = append(result, o)
 	}
@@ -147,25 +147,25 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 		return err // Rollback
 	}
 
-	if amount < 0 {
-		amountIntABS := amount * -1
-		sqlStatementBalance := `UPDATE balances 
-				SET withdrawn_balance = withdrawn_balance + $1,
-				updated_at = $2
-				WHERE user_id = $3;`
+	// if amount < 0 {
+	// 	amountIntABS := amount * -1
+	// 	sqlStatementBalance := `UPDATE balances
+	// 			SET withdrawn_balance = withdrawn_balance + $1,
+	// 			updated_at = $2
+	// 			WHERE user_id = $3;`
 
-		fmt.Println("---------withdrawn_balance---------")
-		fmt.Println("amount", amountIntABS)
-		fmt.Println("createa_at", created_at)
-		fmt.Println("userID", userID)
-		fmt.Println("-------------------------------")
+	// 	fmt.Println("---------withdrawn_balance---------")
+	// 	fmt.Println("amount", amountIntABS)
+	// 	fmt.Println("createa_at", created_at)
+	// 	fmt.Println("userID", userID)
+	// 	fmt.Println("-------------------------------")
 
-		_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at, userID)
-		if err != nil {
-			logger.Log.Infoln("error while update withdrawn_balance", err)
-			return err // Rollback
-		}
-	}
+	// 	_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at, userID)
+	// 	if err != nil {
+	// 		logger.Log.Infoln("error while update withdrawn_balance", err)
+	// 		return err // Rollback
+	// 	}
+	//}
 
 	//Фиксация транзакции
 	if err := tx.Commit(); err != nil {
