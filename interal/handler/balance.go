@@ -33,6 +33,7 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Updated_at", balance.Updated_at)
 	fmt.Println("UserID", balance.UserID)
 	fmt.Println("Withdrawn_balance", balance.Withdrawn_balance)
+
 	fmt.Println("----------------------")
 
 	w.Header().Set("Content-Type", "application/json")
