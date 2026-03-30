@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
 	"net/http"
 	"strconv"
@@ -83,19 +83,40 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	storageUsers := repository.NewUsersStorage(config.DBconn)
 	login := storageUsers.GetByToken(authToken).Login
-	fmt.Println("user login:", login)
-	orders := storageOrders.GetByLogin(login)
-	for idx, order := range orders {
-		fmt.Println("index:", idx)
-		fmt.Println("order Number:", order.Number)
-		fmt.Println("order Accrual:", order.Accrual)
-		fmt.Println("order Uploaded at DB format:", order.UploadedAt)
-		// Преобразование
-		t := time.Unix(0, order.UploadedAt)
-		fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339Nano))
+	ordersFromDB := storageOrders.GetByLogin(login)
+
+	if len(ordersFromDB) == 0 {
+		http.Error(w, "no data in DB", http.StatusNoContent)
+		return
 	}
+
+	var respOrders []model.ResponceOrders
+	for _, orderFromDB := range ordersFromDB {
+		var respOrder model.ResponceOrders
+		respOrder.Number = strconv.FormatInt(orderFromDB.Number, 10)
+		respOrder.Status = orderFromDB.Status
+		respOrder.Accrual = float64(orderFromDB.Accrual) / 100
+		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
+		respOrders = append(respOrders, respOrder)
+	}
+
+	// fmt.Println("user login:", login)
+	// for idx, order := range orders {
+	// 	fmt.Println("index:", idx)
+	// 	fmt.Println("order Number:", order.Number)
+	// 	fmt.Println("order Accrual:", order.Accrual)
+	// 	fmt.Println("order Uploaded at DB format:", order.UploadedAt)
+	// 	// Преобразование
+	// 	t := time.Unix(0, order.UploadedAt)
+	// 	fmt.Println("order Uploaded at output format:", t.Format(time.RFC3339Nano))
+	// }
 
 	// выбираем из базы данных в слайс заказы пользователя с учетом сортировки
 	// меняем формат времени для вывода
+
 	// формируем батч, отправляем
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	// записываем ответ
+	json.NewEncoder(w).Encode(respOrders)
 }
