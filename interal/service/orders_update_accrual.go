@@ -16,12 +16,12 @@ import (
 
 func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {
 	{
-		ctxWithCancel := context.WithoutCancel(ctx)
+		ctxWithoutCancel := context.WithoutCancel(ctx)
 		// создаем группу
 		var wg sync.WaitGroup
 		for orderNumber := range chanToUpdate {
-			wg.Add(1)                                                    // добавляем в группу запуск горутины
-			go UpdateOrderAccrualWorker(ctxWithCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
+			wg.Add(1)                                                       // добавляем в группу запуск горутины
+			go UpdateOrderAccrualWorker(ctxWithoutCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
 		}
 		// ждем всех из группы
 		wg.Wait()

@@ -11,6 +11,8 @@ import (
 	"github.com/mrechkunov/gofermart/interal/logger"
 )
 
+var DBconn *sql.DB
+
 type Addresses struct {
 	ServerBindAddress    string
 	AccuralSystemAddress string
@@ -18,7 +20,6 @@ type Addresses struct {
 	DBConnStr            string
 }
 
-var DBconn *sql.DB
 var ConfigAddresses = Addresses{
 	ServerBindAddress:    "localhost:8080",
 	AccuralSystemAddress: "",
@@ -52,7 +53,6 @@ func Init() {
 	} else {
 		ConfigAddresses.MigrationsPath = *mp
 	}
-
 	if dbConnStr, isEnvDBConnStr := os.LookupEnv("DATABASE_URI"); isEnvDBConnStr {
 		ConfigAddresses.DBConnStr = dbConnStr
 	} else {

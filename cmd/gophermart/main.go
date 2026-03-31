@@ -20,16 +20,15 @@ func main() {
 	r := chi.NewRouter()
 	chanToUpdate := make(chan int64, 10)
 	go service.UpdateOrderListener(ctx, chanToUpdate)
-	r.Route("/api/user/orders", func(r chi.Router) {
-		r.Get("/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
-		r.Post("/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(chanToUpdate))))
+	r.Route("/api/user", func(r chi.Router) {
+		r.Get("/orders/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
+		r.Get("/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
+		r.Get("/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals)))
+		r.Post("/orders/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(chanToUpdate))))
+		r.Post("/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
+		r.Post("/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
+		r.Post("/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw(ctx))))
 	})
-	r.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
-	r.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
-	r.Get("/api/user/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
-	r.Post("/api/user/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw)))
-	r.Get("/api/user/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals)))
-
 	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
 	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, r)
 	if err != nil {

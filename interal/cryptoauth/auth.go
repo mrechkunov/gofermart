@@ -39,7 +39,7 @@ func ValidateToken(tokenString string) error {
 		return []byte(secretKey), nil
 	})
 	if err != nil || !token.Valid {
-		logger.Log.Errorln("token is not valid", err)
+		logger.Log.Infoln("token is not valid", err)
 		return err
 	}
 	return nil
