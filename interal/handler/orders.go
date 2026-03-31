@@ -50,15 +50,15 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
 		orderFromDB := storageOrders.GetByNumber(incomeOrder.Number)
 		if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
-			http.Error(w, "неверный формат номера заказа", http.StatusUnprocessableEntity)
+			http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 			return
 		}
 		if orderFromDB.CreatedBy == incomeOrder.CreatedBy {
-			http.Error(w, "номер заказа уже был загружен этим пользователем", http.StatusOK)
+			http.Error(w, "error order number has already been uploaded by this user.", http.StatusOK)
 			return
 		}
 		if orderFromDB.CreatedBy != incomeOrder.CreatedBy && orderFromDB.Number == incomeOrder.Number {
-			http.Error(w, "номер заказа уже был загружен другим пользователем", http.StatusConflict)
+			http.Error(w, "error order number has already been uploaded by another user", http.StatusConflict)
 			return
 		}
 		c <- incomeOrder.Number

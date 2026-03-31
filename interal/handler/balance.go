@@ -59,23 +59,23 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 	}
 	incomeOrderNumber, err := strconv.ParseInt(string(withdrawOrder.Order), 10, 64)
 	if !cryptoauth.ValidLuhnOrderNumber(incomeOrderNumber) {
-		http.Error(w, "неверный формат номера заказа", http.StatusUnprocessableEntity)
+		http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 		return
 	}
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	userCurrentBalance := storageBalance.GetByLogin(user.Login).CurrentBalance
 	if withdrawOrder.Sum > userCurrentBalance {
-		http.Error(w, "на счету недостаточно средств", http.StatusPaymentRequired)
+		http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 		return
 	}
 	amountInt := int64(withdrawOrder.Sum * -100)
 	orderInt, err := strconv.ParseInt(withdrawOrder.Order, 10, 64)
 	if err != nil {
-		logger.Log.Warnln("error while convert order number fron string to int64 (withdraw)")
+		logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
 	}
 	err = storageBalance.TransactionAdd(context.Background(), user.Login, amountInt, orderInt)
 	if err != nil {
-		logger.Log.Warnln("error while transaction add at withdraw", err)
+		logger.Log.Errorln("error while transaction add at withdraw", err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

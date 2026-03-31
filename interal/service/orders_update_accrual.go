@@ -35,7 +35,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 	for !isDone {
 		resp, err := http.Get(url)
 		if err != nil {
-			logger.Log.Warnln("Error making GET request:", err)
+			logger.Log.Warnln("error making GET request:", err)
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusNoContent {
@@ -62,7 +62,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		var respOrder model.AccrualOrder
 		err = json.NewDecoder(resp.Body).Decode(&respOrder)
 		if err != nil {
-			logger.Log.Warnln("Error decoding JSON:", err)
+			logger.Log.Warnln("error decoding JSON:", err)
 		}
 		if respOrder.Status == "PROCESSED" || respOrder.Status == "INVALID" {
 			isDone = true

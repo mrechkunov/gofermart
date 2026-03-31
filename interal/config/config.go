@@ -62,7 +62,7 @@ func Init() {
 	var err error
 	DBconn, err = NewConnect()
 	if err != nil {
-		logger.Log.Errorln("error while connecting to DB while configre service", err)
+		logger.Log.Errorln("error while connecting to DB (configure service)", err)
 	}
 	migrations(DBconn)
 
@@ -80,12 +80,12 @@ func migrations(DBconn *sql.DB) {
 		ConfigAddresses.MigrationsPath,
 		ConfigAddresses.DBConnStr)
 	if err != nil {
-		logger.Log.Fatalln("Error initializing migrate:", err)
+		logger.Log.Errorln("error initializing migrate:", err)
 	}
 	// Apply all available migrations
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		logger.Log.Fatalln("Error applying migrations:", err)
+		logger.Log.Errorln("error applying migrations:", err)
 	}
-	logger.Log.Infoln("Database migrations applied successfully!")
+	logger.Log.Infoln("database migrations applied successfully!")
 	DBconn.Ping()
 }

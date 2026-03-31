@@ -5,7 +5,6 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -113,13 +112,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	sqlStatementTransactions := `INSERT INTO transactions 
 			(user_id, t_id, amount, order_id, created_at, withdraw) 
 			VALUES ($1, $2, $3, $4, $5, $6)`
-	fmt.Println("---------Insert transaction---------")
-	fmt.Println("amount", amount)
-	fmt.Println("createa_at", created_at)
-	fmt.Println("userID", userID)
-	fmt.Println("t_id", t_id)
-	fmt.Println("withdraw", withdraw)
-	fmt.Println("-------------------------------")
 	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amount, orderID, created_at, withdraw)
 	if err != nil {
 		logger.Log.Infoln("error while insert transaction", err)
@@ -134,13 +126,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 				SET current_balance = current_balance + $1,
 				updated_at = $2 
 				WHERE user_id = $3;`
-
-	fmt.Println("---------update balance---------")
-	fmt.Println("amount", amount)
-	fmt.Println("createa_at", created_at)
-	fmt.Println("userID", userID)
-	fmt.Println("-------------------------------")
-
 	_, err = tx.ExecContext(ctx, sqlStatementBalance, amount, created_at, userID)
 	if err != nil {
 		logger.Log.Infoln("error while update balance", err)
@@ -153,13 +138,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 				SET withdrawn_balance = withdrawn_balance + $1,
 				updated_at = $2
 				WHERE user_id = $3;`
-
-		fmt.Println("---------withdrawn_balance---------")
-		fmt.Println("amount", amountIntABS)
-		fmt.Println("createa_at", created_at)
-		fmt.Println("userID", userID)
-		fmt.Println("-------------------------------")
-
 		_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at, userID)
 		if err != nil {
 			logger.Log.Infoln("error while update withdrawn_balance", err)

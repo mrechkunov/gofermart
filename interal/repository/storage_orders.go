@@ -63,7 +63,7 @@ func (so *StorageOrders) GetByLogin(login string) []model.Orders {
 	}
 	// Проверка на ошибки после цикла
 	if err = rows.Err(); err != nil {
-		logger.Log.Fatal(err)
+		logger.Log.Errorln(err)
 	}
 	return result
 }

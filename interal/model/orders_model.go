@@ -1,11 +1,11 @@
 package model
 
 type Orders struct { // все данные по заказу
-	Number     int64  `json:"number" db:"o_number"`
-	Status     string `json:"status" db:"o_status"`
-	Accrual    int64  `json:"accrual,omitempty" db:"o_accrual"`
-	UploadedAt int64  `json:"uploaded_at" db:"uploaded_at"`
-	CreatedBy  string `json:"created_by" db:"created_by"`
+	Number     int64  `json:"number"`
+	Status     string `json:"status"`
+	Accrual    int64  `json:"accrual,omitempty"`
+	UploadedAt int64  `json:"uploaded_at"`
+	CreatedBy  string `json:"created_by"`
 }
 
 type AccrualOrder struct { // то что отдает сервис accrual

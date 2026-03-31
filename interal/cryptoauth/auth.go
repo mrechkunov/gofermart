@@ -22,7 +22,7 @@ func GenerateToken(uLogin string) (string, error) {
 		"exp":      time.Now().Add(time.Hour * 2).Unix(), // Срок действия 2 часа
 		"iat":      time.Now().Unix(),
 	}
-	// Создаем токен с методом подписи HMAC (HS256)
+	// Создаем токен
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// Подписываем токен
 	tokenString, err := token.SignedString([]byte(secretKey))
@@ -39,7 +39,7 @@ func ValidateToken(tokenString string) error {
 		return []byte(secretKey), nil
 	})
 	if err != nil || !token.Valid {
-		logger.Log.Infoln("token is not valid", err)
+		logger.Log.Errorln("token is not valid", err)
 		return err
 	}
 	return nil
@@ -50,7 +50,7 @@ func EncryptPass(password string) string {
 	h := hmac.New(sha256.New, []byte(secretKey))
 	_, err := h.Write([]byte(password))
 	if err != nil {
-		logger.Log.Infoln("error while encrypt password", err)
+		logger.Log.Errorln("error while encrypt password", err)
 	}
 	encryptedPassword := h.Sum(nil)
 	return hex.EncodeToString(encryptedPassword)

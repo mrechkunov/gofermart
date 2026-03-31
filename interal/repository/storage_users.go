@@ -43,7 +43,7 @@ func (su *StorageUsers) GetByToken(token string) model.Users {
 	}
 	err = su.DBconnection.QueryRow("SELECT u_login, u_password, u_bearer FROM users WHERE u_bearer=$1", token).Scan(&result.Login, &result.Password, &result.Bearer)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("Запись не найдена")
+		logger.Log.Infoln("user is not exist in DB")
 	}
 	return result
 }
@@ -76,7 +76,7 @@ func (su *StorageUsers) InsertUser(user model.Users) error {
 			VALUES ($1, $2, $3)`
 	_, err = su.DBconnection.Exec(sqlStatement, user.Login, user.Password, user.Bearer)
 	if err != nil {
-		logger.Log.Errorln("error while insert user to db", err)
+		logger.Log.Errorln("error while insert user to DB", err)
 		return err
 	}
 	return nil
