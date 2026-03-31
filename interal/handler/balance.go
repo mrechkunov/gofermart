@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
@@ -75,9 +74,7 @@ func Withdraw(ctx context.Context) func(w http.ResponseWriter, r *http.Request) 
 		if err != nil {
 			logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
 		}
-		ctxWithTimeout, cancel := context.WithTimeout(ctx, 2*time.Second)
-		defer cancel()
-		err = storageBalance.TransactionAdd(ctxWithTimeout, user.Login, amountInt, orderInt)
+		err = storageBalance.TransactionAdd(ctx, user.Login, amountInt, orderInt)
 		if err != nil {
 			logger.Log.Errorln("error while transaction add at withdraw", err)
 		}
