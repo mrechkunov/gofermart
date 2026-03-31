@@ -21,10 +21,10 @@ func main() {
 	chanToUpdate := make(chan int64, 10)
 	go service.UpdateOrderListener(ctx, chanToUpdate)
 	r.Route("/api/user", func(r chi.Router) {
-		r.Get("/orders/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
+		r.Get("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
 		r.Get("/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
 		r.Get("/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals)))
-		r.Post("/orders/", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(chanToUpdate))))
+		r.Post("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(chanToUpdate))))
 		r.Post("/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
 		r.Post("/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
 		r.Post("/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw(ctx))))
