@@ -15,17 +15,15 @@ import (
 )
 
 func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {
-	{
-		ctxWithoutCancel := context.WithoutCancel(ctx)
-		// создаем группу
-		var wg sync.WaitGroup
-		for orderNumber := range chanToUpdate {
-			wg.Add(1)                                                       // добавляем в группу запуск горутины
-			go UpdateOrderAccrualWorker(ctxWithoutCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
-		}
-		// ждем всех из группы
-		wg.Wait()
+	ctxWithoutCancel := context.WithoutCancel(ctx)
+	// создаем группу
+	var wg sync.WaitGroup
+	for orderNumber := range chanToUpdate {
+		wg.Add(1)                                                       // добавляем в группу запуск горутины
+		go UpdateOrderAccrualWorker(ctxWithoutCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
 	}
+	// ждем всех из группы
+	wg.Wait()
 }
 
 func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGroup) {
@@ -39,9 +37,8 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusNoContent {
-			logger.Log.Infoln("accrual responce no content, sleep 3 sec")
-			logger.Log.Infoln("Retry-After:", resp.Header.Get("Retry-After"))
-			time.Sleep(3 * time.Second)
+			logger.Log.Infoln("accrual responce no content, sleep 2 sec")
+			time.Sleep(2 * time.Second)
 			continue
 		}
 		if resp.StatusCode == http.StatusTooManyRequests {
@@ -54,12 +51,10 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 			logger.Log.Infoln("accrual responce to many requests, sleep", timeToSleep, " sec")
 			continue
 		}
-
 		if resp.StatusCode != http.StatusOK {
 			logger.Log.Infoln("API request failed with status:", resp.Status)
 			continue
 		}
-
 		var respOrder model.AccrualOrder
 		err = json.NewDecoder(resp.Body).Decode(&respOrder)
 		if err != nil {
@@ -68,7 +63,6 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if respOrder.Status == "PROCESSED" || respOrder.Status == "INVALID" {
 			isDone = true
 		}
-
 		var order model.Orders
 		order.Number, err = strconv.ParseInt(respOrder.Order, 10, 64)
 		if err != nil {
