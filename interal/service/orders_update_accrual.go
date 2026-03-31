@@ -40,6 +40,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusNoContent {
 			logger.Log.Infoln("accrual responce no content, sleep 3 sec")
+			logger.Log.Infoln("Retry-After:", resp.Header.Get("Retry-After"))
 			time.Sleep(3 * time.Second)
 			continue
 		}

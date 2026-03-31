@@ -150,7 +150,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 		logger.Log.Errorln(err)
 		return err
 	}
-	logger.Log.Infoln("Transaction added", amount, orderID)
 	return nil
 }
 
