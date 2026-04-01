@@ -95,7 +95,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		var respOrder model.ResponceOrders
 		respOrder.Number = strconv.FormatInt(orderFromDB.Number, 10)
 		respOrder.Status = orderFromDB.Status
-		respOrder.Accrual = float64(orderFromDB.Accrual) / 100
+		respOrder.Accrual = float64(orderFromDB.Accrual) / 10000
 		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
 		respOrders = append(respOrders, respOrder)
 	}

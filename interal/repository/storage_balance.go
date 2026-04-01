@@ -32,8 +32,8 @@ func (sb *StorageBalance) GetBalanceByLogin(ctx context.Context, login string) m
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
-	result.CurrentBalance = float64(curBal) / 100          // так как в бд храним и работаем с int преобразуем при запросе
-	result.Withdrawn_balance = float64(withdrawnBal) / 100 // так как в бд храним и работаем с int преобразуем при запросе
+	result.CurrentBalance = float64(curBal) / 10000          // так как в бд храним и работаем с int преобразуем при запросе
+	result.Withdrawn_balance = float64(withdrawnBal) / 10000 // так как в бд храним и работаем с int преобразуем при запросе
 	return result
 }
 
@@ -73,8 +73,10 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 
 // добавление данных в БД
 func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int64, orderID int64) error {
-	//Начало транзакции
-	tx, err := sb.DBconnection.BeginTx(ctx, nil)
+	//Начало
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	tx, err := sb.DBconnection.BeginTx(ctxWithTimeout, nil)
 	if err != nil {
 		logger.Log.Errorln(err)
 	}
@@ -82,7 +84,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	defer func() {
 		err := tx.Rollback()
 		if err != nil {
-			logger.Log.Warnln("error while rollback DB transaction", err)
+			logger.Log.Infoln("error while rollback DB transaction", err)
 		}
 	}()
 	// запись в таблицу транзакций
@@ -102,7 +104,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	sqlStatementTransactions := `INSERT INTO transactions 
 			(user_id, t_id, amount, order_id, created_at, withdraw) 
 			VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err = tx.ExecContext(ctx, sqlStatementTransactions, userID, t_id, amount, orderID, created_at, withdraw)
+	_, err = tx.ExecContext(ctxWithTimeout, sqlStatementTransactions, userID, t_id, amount, orderID, created_at, withdraw)
 	if err != nil {
 		logger.Log.Infoln("error while insert transaction", err)
 		return err // Rollback
@@ -116,7 +118,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 				SET current_balance = current_balance + $1,
 				updated_at = $2 
 				WHERE user_id = $3;`
-	_, err = tx.ExecContext(ctx, sqlStatementBalance, amount, created_at, userID)
+	_, err = tx.ExecContext(ctxWithTimeout, sqlStatementBalance, amount, created_at, userID)
 	if err != nil {
 		logger.Log.Infoln("error while update balance", err)
 		return err // Rollback
@@ -128,7 +130,7 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 				SET withdrawn_balance = withdrawn_balance + $1,
 				updated_at = $2
 				WHERE user_id = $3;`
-		_, err = tx.ExecContext(ctx, sqlStatementBalance, amountIntABS, created_at, userID)
+		_, err = tx.ExecContext(ctxWithTimeout, sqlStatementBalance, amountIntABS, created_at, userID)
 		if err != nil {
 			logger.Log.Infoln("error while update withdrawn_balance", err)
 			return err // Rollback
