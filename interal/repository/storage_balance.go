@@ -60,7 +60,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 			logger.Log.Errorln(err)
 		}
 		o.OrderNumber = strconv.FormatInt(orderNumber, 10)
-		o.Sum = float64(amount) / -100
+		o.Sum = float64(amount) / -10000
 		o.Processed_at = time.Unix(0, created_at).Format(time.RFC3339)
 		result = append(result, o)
 	}
