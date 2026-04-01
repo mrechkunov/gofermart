@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -16,7 +15,7 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func OrdersPost(ctx context.Context, c chan int64) func(w http.ResponseWriter, r *http.Request) {
+func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
@@ -31,7 +30,7 @@ func OrdersPost(ctx context.Context, c chan int64) func(w http.ResponseWriter, r
 			http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
 			return
 		}
-		user = storageUsers.GetUserByToken(ctx, user.Bearer)
+		user = storageUsers.GetUserByToken(r.Context(), user.Bearer)
 		//читаем тело запроса
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -49,7 +48,7 @@ func OrdersPost(ctx context.Context, c chan int64) func(w http.ResponseWriter, r
 		incomeOrder.UploadedAt = time.Now().UnixNano()
 		incomeOrder.Status = "NEW"
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
-		orderFromDB := storageOrders.GetByNumber(ctx, incomeOrder.Number)
+		orderFromDB := storageOrders.GetByNumber(r.Context(), incomeOrder.Number)
 		if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
 			http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 			return
@@ -63,50 +62,48 @@ func OrdersPost(ctx context.Context, c chan int64) func(w http.ResponseWriter, r
 			return
 		}
 		c <- incomeOrder.Number
-		storageOrders.InsertOrder(ctx, incomeOrder)
+		storageOrders.InsertOrder(r.Context(), incomeOrder)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusAccepted)
 	}
 }
 
-func OrdersGet(ctx context.Context) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
-			return
-		}
-		// читаем Header Autorization и записываем его в поле token
-		authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		err := cryptoauth.ValidateToken(authToken)
-		if err != nil {
-			http.Error(w, "missing authorization header", http.StatusUnauthorized)
-			return
-		}
-		storageOrders := repository.NewOrdersStorage(config.DBconn)
-		storageUsers := repository.NewUsersStorage(config.DBconn)
-		login := storageUsers.GetUserByToken(ctx, authToken).Login
-		ordersFromDB := storageOrders.GetByLogin(ctx, login)
+func OrdersGet(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
+		return
+	}
+	// читаем Header Autorization и записываем его в поле token
+	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	err := cryptoauth.ValidateToken(authToken)
+	if err != nil {
+		http.Error(w, "missing authorization header", http.StatusUnauthorized)
+		return
+	}
+	storageOrders := repository.NewOrdersStorage(config.DBconn)
+	storageUsers := repository.NewUsersStorage(config.DBconn)
+	login := storageUsers.GetUserByToken(r.Context(), authToken).Login
+	ordersFromDB := storageOrders.GetByLogin(r.Context(), login)
 
-		if len(ordersFromDB) == 0 {
-			http.Error(w, "no data in DB", http.StatusNoContent)
-			return
-		}
-		// формируем батч, отправляем
-		var respOrders []model.ResponceOrders
-		for _, orderFromDB := range ordersFromDB {
-			var respOrder model.ResponceOrders
-			respOrder.Number = strconv.FormatInt(orderFromDB.Number, 10)
-			respOrder.Status = orderFromDB.Status
-			respOrder.Accrual = float64(orderFromDB.Accrual) / 100
-			respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
-			respOrders = append(respOrders, respOrder)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		// записываем ответ
-		err = json.NewEncoder(w).Encode(respOrders)
-		if err != nil {
-			logger.Log.Warnln("error while encoding json in OrdersGet handler", err)
-		}
+	if len(ordersFromDB) == 0 {
+		http.Error(w, "no data in DB", http.StatusNoContent)
+		return
+	}
+	// формируем батч, отправляем
+	var respOrders []model.ResponceOrders
+	for _, orderFromDB := range ordersFromDB {
+		var respOrder model.ResponceOrders
+		respOrder.Number = strconv.FormatInt(orderFromDB.Number, 10)
+		respOrder.Status = orderFromDB.Status
+		respOrder.Accrual = float64(orderFromDB.Accrual) / 100
+		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
+		respOrders = append(respOrders, respOrder)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	// записываем ответ
+	err = json.NewEncoder(w).Encode(respOrders)
+	if err != nil {
+		logger.Log.Warnln("error while encoding json in OrdersGet handler", err)
 	}
 }
