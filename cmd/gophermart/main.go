@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -11,6 +10,7 @@ import (
 	"github.com/mrechkunov/gofermart/interal/handler"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/service"
+	"github.com/mrechkunov/gofermart/server"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	config.Init()
 	ctx := context.Background()
 	r := chi.NewRouter()
-
+	var Server = server.NewServer(&config.ConfigAddresses, r)
 	go service.UpdateOrderListener(ctx, config.ChanToUpdate)
 	r.Route("/api/user", func(r chi.Router) {
 		r.Get("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet(ctx))))
@@ -29,11 +29,9 @@ func main() {
 		r.Post("/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login(ctx))))
 		r.Post("/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw(ctx))))
 	})
+
 	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
-	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, r)
-	if err != nil {
-		logger.Log.Errorln(err)
-	}
+	Server.Run()
 	close(config.ChanToUpdate)
 	config.DBconn.Close()
 }
