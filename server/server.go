@@ -10,21 +10,21 @@ import (
 
 // Server - структура сервера
 type Server struct {
-	AppConfig *config.Addresses
-	Router    *chi.Mux
+	Addr   string
+	Router *chi.Mux
 }
 
 // NewServer Метод для инициализации структуры
 func NewServer(appConfig *config.Addresses, router *chi.Mux) *Server {
 	return &Server{
-		AppConfig: appConfig,
-		Router:    router,
+		Addr:   config.ConfigAddresses.ServerBindAddress,
+		Router: router,
 	}
 }
 
 // Run - метод для запуска нашего http-сервера
 func (server *Server) Run() {
-	err := http.ListenAndServe(server.AppConfig.ServerBindAddress, server.Router)
+	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, server.Router)
 	if err != nil {
 		logger.Log.Errorln(err)
 		return
