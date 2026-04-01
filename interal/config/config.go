@@ -87,5 +87,8 @@ func migrations(DBconn *sql.DB) {
 		logger.Log.Errorln("error applying migrations:", err)
 	}
 	logger.Log.Infoln("database migrations applied successfully!")
-	DBconn.Ping()
+	err = DBconn.Ping()
+	if err != nil {
+		logger.Log.Warnln("error while ping DB after migratioans applied", err)
+	}
 }

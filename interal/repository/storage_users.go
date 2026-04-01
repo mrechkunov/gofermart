@@ -1,7 +1,9 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
+	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -15,19 +17,13 @@ type StorageUsers struct {
 
 // создаем новый сторадж для работы с таблицей пользователей
 func NewUsersStorage(DBconn *sql.DB) StorageUsers {
-	var su StorageUsers
-	su.DBconnection = DBconn
-	return su
+	return StorageUsers{DBconnection: DBconn}
 }
 
 // запрос данных по логину
-func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
+func (su *StorageUsers) GetUserByLogin(ctx context.Context, login string) model.Users {
 	var result model.Users
-	err := su.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
-	err = su.DBconnection.QueryRow("SELECT u_login, u_password, u_bearer FROM users WHERE u_login=$1", uLogin).Scan(&result.Login, &result.Password, &result.Bearer)
+	err := su.DBconnection.QueryRowContext(ctx, "SELECT u_login, u_password, u_bearer FROM users WHERE u_login=$1", login).Scan(&result.Login, &result.Password, &result.Bearer)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("user is not exist in DB")
 	}
@@ -35,13 +31,9 @@ func (su *StorageUsers) GetByLogin(uLogin string) model.Users {
 }
 
 // запрос данных по token
-func (su *StorageUsers) GetByToken(token string) model.Users {
+func (su *StorageUsers) GetUserByToken(ctx context.Context, token string) model.Users {
 	var result model.Users
-	err := su.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
-	err = su.DBconnection.QueryRow("SELECT u_login, u_password, u_bearer FROM users WHERE u_bearer=$1", token).Scan(&result.Login, &result.Password, &result.Bearer)
+	err := su.DBconnection.QueryRowContext(ctx, "SELECT u_login, u_password, u_bearer FROM users WHERE u_bearer=$1", token).Scan(&result.Login, &result.Password, &result.Bearer)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("user is not exist in DB")
 	}
@@ -49,15 +41,11 @@ func (su *StorageUsers) GetByToken(token string) model.Users {
 }
 
 // обновление данных в БД
-func (su *StorageUsers) UpdateUser(user model.Users) error {
-	err := su.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
+func (su *StorageUsers) UpdateUser(ctx context.Context, user model.Users) error {
 	sqlStatement := `UPDATE users 
 		SET u_bearer = $1
 		WHERE u_login = $2;`
-	_, err = su.DBconnection.Exec(sqlStatement, user.Bearer, user.Login)
+	_, err := su.DBconnection.ExecContext(ctx, sqlStatement, user.Bearer, user.Login)
 	if err != nil {
 		logger.Log.Errorln("error while update user token in DB", err)
 		return err
@@ -66,15 +54,13 @@ func (su *StorageUsers) UpdateUser(user model.Users) error {
 }
 
 // добавление данных в БД
-func (su *StorageUsers) InsertUser(user model.Users) error {
-	err := su.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
+func (su *StorageUsers) InsertUser(ctx context.Context, user model.Users) error {
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
 	sqlStatement := `INSERT INTO users 
 			(u_login, u_password, u_bearer) 
 			VALUES ($1, $2, $3)`
-	_, err = su.DBconnection.Exec(sqlStatement, user.Login, user.Password, user.Bearer)
+	_, err := su.DBconnection.ExecContext(ctxWithTimeout, sqlStatement, user.Login, user.Password, user.Bearer)
 	if err != nil {
 		logger.Log.Errorln("error while insert user to DB", err)
 		return err

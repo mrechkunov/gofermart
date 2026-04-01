@@ -20,20 +20,14 @@ type StorageBalance struct {
 
 // создаем новый сторадж для работы с таблицей пользователей
 func NewBalanceStorage(DBconn *sql.DB) StorageBalance {
-	var sb StorageBalance
-	sb.DBconnection = DBconn
-	return sb
+	return StorageBalance{DBconnection: DBconn}
 }
 
 // запрос данных по логину
-func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
+func (sb *StorageBalance) GetBalanceByLogin(ctx context.Context, login string) model.Balance {
 	var result model.Balance
-	err := sb.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
 	var curBal, withdrawnBal int64
-	err = sb.DBconnection.QueryRow("SELECT user_id, current_balance, withdrawn_balance, updated_at FROM balances WHERE user_id=$1", uLogin).
+	err := sb.DBconnection.QueryRowContext(ctx, "SELECT user_id, current_balance, withdrawn_balance, updated_at FROM balances WHERE user_id=$1", login).
 		Scan(&result.UserID, &curBal, &withdrawnBal, &result.Updated_at)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
@@ -44,18 +38,14 @@ func (sb *StorageBalance) GetByLogin(uLogin string) model.Balance {
 }
 
 // запрос транзакций по логину
-func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.TransactionWithdraw {
+func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login string) []model.TransactionWithdraw {
 	var result []model.TransactionWithdraw
-	err := sb.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
 	sqlStatement := `SELECT order_id, amount, created_at FROM transactions
 		WHERE user_id = $1 AND withdraw is true ORDER BY created_at DESC`
 
-	rows, err := sb.DBconnection.Query(sqlStatement, uLogin)
+	rows, err := sb.DBconnection.QueryContext(ctx, sqlStatement, login)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("withdraw orders for user", uLogin, "is not exist in DB")
+		logger.Log.Infoln("withdraw orders for user", login, "is not exist in DB")
 	}
 	if err != nil {
 		logger.Log.Warnln("error while select transactions by login from DB", err)
@@ -83,19 +73,19 @@ func (sb *StorageBalance) GetTransactionsByLogin(uLogin string) []model.Transact
 
 // добавление данных в БД
 func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int64, orderID int64) error {
-	err := sb.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
 	//Начало транзакции
 	tx, err := sb.DBconnection.BeginTx(ctx, nil)
 	if err != nil {
 		logger.Log.Errorln(err)
 	}
 	// Откат при ошибке (defer)
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			logger.Log.Warnln("error while rollback DB transaction", err)
+		}
+	}()
 	// запись в таблицу транзакций
-
 	// подготовка данных
 	// generate NEW TransactionID
 	id := make([]byte, 4)
@@ -153,18 +143,14 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	return nil
 }
 
-func (sb *StorageBalance) AddUserBalance(login string) error {
-	err := sb.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
+func (sb *StorageBalance) AddUserBalance(ctx context.Context, login string) error {
 	currentBalance := 0
 	withdrawnBalance := 0
 	updated_at := time.Now().UnixNano()
 	sqlStatement := `INSERT INTO balances
 			(user_id, current_balance, withdrawn_balance, updated_at) 
 			VALUES ($1, $2, $3, $4)`
-	_, err = sb.DBconnection.Exec(sqlStatement, login, currentBalance, withdrawnBalance, updated_at)
+	_, err := sb.DBconnection.ExecContext(ctx, sqlStatement, login, currentBalance, withdrawnBalance, updated_at)
 	if err != nil {
 		logger.Log.Errorln("error while insert new user`s balance to db", err)
 		return err

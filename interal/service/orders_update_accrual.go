@@ -15,12 +15,11 @@ import (
 )
 
 func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {
-	ctxWithoutCancel := context.WithoutCancel(ctx)
 	// создаем группу
 	var wg sync.WaitGroup
 	for orderNumber := range chanToUpdate {
-		wg.Add(1)                                                       // добавляем в группу запуск горутины
-		go UpdateOrderAccrualWorker(ctxWithoutCancel, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
+		wg.Add(1)                                          // добавляем в группу запуск горутины
+		go UpdateOrderAccrualWorker(ctx, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
 	}
 	// ждем всех из группы
 	wg.Wait()
@@ -72,7 +71,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 			order.Status = respOrder.Status
 		}
 		storageOrders := repository.NewOrdersStorage(config.DBconn)
-		order.CreatedBy = storageOrders.GetByNumber(order.Number).CreatedBy
+		order.CreatedBy = storageOrders.GetByNumber(ctx, order.Number).CreatedBy
 		order.Accrual = int64(respOrder.Accrual * 100) // храним в БД сумму в копейках
 		if order.Accrual > 0 {
 			storageBalance := repository.NewBalanceStorage(config.DBconn)
@@ -81,6 +80,9 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 				logger.Log.Warnln("error while transaction add at order update", err)
 			}
 		}
-		storageOrders.UpdateOrder(order)
+		err = storageOrders.UpdateOrder(ctx, order)
+		if err != nil {
+			logger.Log.Warnln("error while update order in DB(UpdateOrderAccrualWorker)", err)
+		}
 	}
 }

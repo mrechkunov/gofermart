@@ -14,26 +14,31 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func Balance(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
-		return
+func Balance(ctx context.Context) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
+			return
+		}
+		// читаем Header Autorization и записываем его в поле token
+		authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		err := cryptoauth.ValidateToken(authToken)
+		if err != nil {
+			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+			return
+		}
+		storageUsers := repository.NewUsersStorage(config.DBconn)
+		login := storageUsers.GetUserByToken(ctx, authToken).Login
+		storageBalance := repository.NewBalanceStorage(config.DBconn)
+		balance := storageBalance.GetBalanceByLogin(ctx, login)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		// записываем ответ
+		err = json.NewEncoder(w).Encode(balance)
+		if err != nil {
+			logger.Log.Warnln("error while encoding json in balance handler", err)
+		}
 	}
-	// читаем Header Autorization и записываем его в поле token
-	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	err := cryptoauth.ValidateToken(authToken)
-	if err != nil {
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
-	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetByToken(authToken).Login
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	balance := storageBalance.GetByLogin(login)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	// записываем ответ
-	json.NewEncoder(w).Encode(balance)
 }
 
 func Withdraw(ctx context.Context) func(w http.ResponseWriter, r *http.Request) {
@@ -50,7 +55,7 @@ func Withdraw(ctx context.Context) func(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		storageUsers := repository.NewUsersStorage(config.DBconn)
-		user := storageUsers.GetByToken(authToken)
+		user := storageUsers.GetUserByToken(ctx, authToken)
 
 		// читаем тело запроса
 		var withdrawOrder model.WithdrawOrder
@@ -64,7 +69,7 @@ func Withdraw(ctx context.Context) func(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		storageBalance := repository.NewBalanceStorage(config.DBconn)
-		userCurrentBalance := storageBalance.GetByLogin(user.Login).CurrentBalance
+		userCurrentBalance := storageBalance.GetBalanceByLogin(ctx, user.Login).CurrentBalance
 		if withdrawOrder.Sum > userCurrentBalance {
 			http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 			return
@@ -82,29 +87,33 @@ func Withdraw(ctx context.Context) func(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusOK)
 	}
 }
-
-func Withdrawals(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
-		return
+func Withdrawals(ctx context.Context) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
+			return
+		}
+		// читаем Header Autorization и записываем его в поле token
+		authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		err := cryptoauth.ValidateToken(authToken)
+		if err != nil {
+			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+			return
+		}
+		storageUsers := repository.NewUsersStorage(config.DBconn)
+		login := storageUsers.GetUserByToken(ctx, authToken).Login
+		storageBalance := repository.NewBalanceStorage(config.DBconn)
+		withdrawals := storageBalance.GetTransactionsByLogin(ctx, login)
+		if len(withdrawals) == 0 {
+			http.Error(w, "no withdrawals in DB", http.StatusNoContent)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		// записываем ответ
+		err = json.NewEncoder(w).Encode(withdrawals)
+		if err != nil {
+			logger.Log.Warnln("error while encoding json in withdrawals handler", err)
+		}
 	}
-	// читаем Header Autorization и записываем его в поле token
-	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	err := cryptoauth.ValidateToken(authToken)
-	if err != nil {
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
-	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetByToken(authToken).Login
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	withdrawals := storageBalance.GetTransactionsByLogin(login)
-	if len(withdrawals) == 0 {
-		http.Error(w, "no withdrawals in DB", http.StatusNoContent)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	// записываем ответ
-	json.NewEncoder(w).Encode(withdrawals)
 }
