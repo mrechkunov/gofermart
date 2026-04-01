@@ -82,5 +82,4 @@ func init() { // функция запускается автоматическ�
 	}()
 	// делаем регистратор SugaredLogger
 	Log = zapLogger.Sugar()
-
 }

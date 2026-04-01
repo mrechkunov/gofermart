@@ -9,22 +9,22 @@ import (
 )
 
 // Server - структура сервера
-type Server struct {
+type ServerHTTP struct {
 	Addr   string
 	Router *chi.Mux
 }
 
 // NewServer Метод для инициализации структуры
-func NewServer(appConfig *config.Addresses, router *chi.Mux) *Server {
-	return &Server{
+func NewServer(appConfig *config.Addresses, router *chi.Mux) *ServerHTTP {
+	return &ServerHTTP{
 		Addr:   config.ConfigAddresses.ServerBindAddress,
 		Router: router,
 	}
 }
 
 // Run - метод для запуска нашего http-сервера
-func (server *Server) Run() {
-	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, server.Router)
+func (s *ServerHTTP) Run() {
+	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, s.Router)
 	if err != nil {
 		logger.Log.Errorln(err)
 		return
