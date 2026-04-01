@@ -11,7 +11,11 @@ import (
 	"github.com/mrechkunov/gofermart/interal/logger"
 )
 
+// DB connection
 var DBconn *sql.DB
+
+// channel to update ordersAccruals
+var ChanToUpdate = make(chan int64, 10)
 
 type Addresses struct {
 	ServerBindAddress    string
@@ -32,7 +36,6 @@ func Init() {
 	as := flag.String("r", "", "accural system address")
 	mp := flag.String("m", "file://migrations", "default migration PATH")
 	cs := flag.String("d", "postgres://yapra:yaprapass@10.254.40.123:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
-	//cs := flag.String("d", "postgres://yapra:yaprapass@localhost:5432/yandexpracticum?sslmode=disable", "default DBConnStr")
 	flag.Parse()
 
 	// если переиенные окружения установленны, берем их, иначе берем флаг
@@ -65,7 +68,6 @@ func Init() {
 		logger.Log.Errorln("error while connecting to DB (configure service)", err)
 	}
 	migrations(DBconn)
-
 }
 func NewConnect() (*sql.DB, error) {
 	db, err := sql.Open("pgx", ConfigAddresses.DBConnStr)

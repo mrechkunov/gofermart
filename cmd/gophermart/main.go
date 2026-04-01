@@ -14,17 +14,17 @@ import (
 )
 
 func main() {
+	logger.Log.Infoln("reading config")
 	config.Init()
 	ctx := context.Background()
-	logger.Log.Infoln("reading config")
 	r := chi.NewRouter()
-	chanToUpdate := make(chan int64, 10)
-	go service.UpdateOrderListener(ctx, chanToUpdate)
+
+	go service.UpdateOrderListener(ctx, config.ChanToUpdate)
 	r.Route("/api/user", func(r chi.Router) {
 		r.Get("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet(ctx))))
 		r.Get("/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance(ctx))))
 		r.Get("/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals(ctx))))
-		r.Post("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(ctx, chanToUpdate))))
+		r.Post("/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(ctx, config.ChanToUpdate))))
 		r.Post("/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register(ctx))))
 		r.Post("/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login(ctx))))
 		r.Post("/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw(ctx))))
@@ -34,6 +34,6 @@ func main() {
 	if err != nil {
 		logger.Log.Errorln(err)
 	}
-	close(chanToUpdate)
+	close(config.ChanToUpdate)
 	config.DBconn.Close()
 }

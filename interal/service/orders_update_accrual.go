@@ -34,7 +34,6 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if err != nil {
 			logger.Log.Warnln("error making GET request:", err)
 		}
-		defer resp.Body.Close()
 		if resp.StatusCode == http.StatusNoContent {
 			logger.Log.Infoln("accrual responce no content, sleep 2 sec")
 			time.Sleep(2 * time.Second)
@@ -59,6 +58,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if err != nil {
 			logger.Log.Warnln("error decoding JSON:", err)
 		}
+		resp.Body.Close()
 		if respOrder.Status == "PROCESSED" || respOrder.Status == "INVALID" {
 			isDone = true
 		}
@@ -84,5 +84,6 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 		if err != nil {
 			logger.Log.Warnln("error while update order in DB(UpdateOrderAccrualWorker)", err)
 		}
+
 	}
 }
