@@ -80,15 +80,6 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	if err != nil {
 		logger.Log.Errorln(err)
 	}
-	// Откат при ошибке (defer)
-	defer func() {
-		err := tx.Rollback()
-		if err != nil {
-			logger.Log.Infoln("error while rollback DB transaction", err)
-		}
-	}()
-	// запись в таблицу транзакций
-	// подготовка данных
 	// generate NEW TransactionID
 	id := make([]byte, 4)
 	_, err = rand.Read(id)
@@ -96,6 +87,15 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 		logger.Log.Infoln("error while generate TransactionID", err)
 	}
 	t_id := hex.EncodeToString(id)
+	// Откат при ошибке (defer)
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			logger.Log.Infoln("transaction", t_id, err)
+		}
+	}()
+	// запись в таблицу транзакций
+	// подготовка данных
 	created_at := time.Now().UnixNano()
 	var withdraw = false
 	if amount <= 0 {

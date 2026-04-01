@@ -26,7 +26,7 @@ func (so *StorageOrders) GetByNumber(ctx context.Context, number int64) model.Or
 		WHERE o_number = $1`
 	err := so.DBconnection.QueryRowContext(ctx, sqlStatement, number).Scan(&result.Number, &result.Status, &result.Accrual, &result.UploadedAt, &result.CreatedBy)
 	if err == sql.ErrNoRows {
-		logger.Log.Infoln("order with number", number, "is not exist in DB")
+		logger.Log.Infoln("order №", number, "is not exist in DB")
 	}
 	return result
 }
