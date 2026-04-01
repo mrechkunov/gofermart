@@ -70,7 +70,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 		return
 	}
-	amountInt := int64(withdrawOrder.Sum * -100)
+	amountInt := int64(withdrawOrder.Sum * -10000)
 	orderInt, err := strconv.ParseInt(withdrawOrder.Order, 10, 64)
 	if err != nil {
 		logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
