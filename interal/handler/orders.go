@@ -92,11 +92,12 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 	// формируем батч, отправляем
 	var respOrders []model.ResponceOrders
 	for _, orderFromDB := range ordersFromDB {
-		var respOrder model.ResponceOrders
-		respOrder.Number = strconv.FormatInt(orderFromDB.Number, 10)
-		respOrder.Status = orderFromDB.Status
-		respOrder.Accrual = float64(orderFromDB.Accrual) / 10000
-		respOrder.UploadedAt = time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339)
+		respOrder := model.ResponceOrders{
+			Number:     strconv.FormatInt(orderFromDB.Number, 10),
+			Status:     orderFromDB.Status,
+			Accrual:    float64(orderFromDB.Accrual) / 10000,
+			UploadedAt: time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339),
+		}
 		respOrders = append(respOrders, respOrder)
 	}
 	w.Header().Set("Content-Type", "application/json")

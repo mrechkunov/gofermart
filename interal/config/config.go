@@ -62,8 +62,7 @@ func Init() {
 		ConfigAddresses.DBConnStr = *cs
 	}
 	// create connect to DB and run Up all migrations
-	var err error
-	DBconn, err = NewConnect()
+	DBconn, err := NewConnect()
 	if err != nil {
 		logger.Log.Errorln("error while connecting to DB (configure service)", err)
 	}

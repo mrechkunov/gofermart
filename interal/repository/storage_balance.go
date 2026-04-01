@@ -52,17 +52,18 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var o model.TransactionWithdraw
 		var orderNumber int64
 		var amount int64
 		var created_at int64
 		if err := rows.Scan(&orderNumber, &amount, &created_at); err != nil {
 			logger.Log.Errorln(err)
 		}
-		o.OrderNumber = strconv.FormatInt(orderNumber, 10)
-		o.Sum = float64(amount) / -10000
-		o.Processed_at = time.Unix(0, created_at).Format(time.RFC3339)
-		result = append(result, o)
+		order := model.TransactionWithdraw{
+			OrderNumber:  strconv.FormatInt(orderNumber, 10),
+			Sum:          float64(amount) / -10000,
+			Processed_at: time.Unix(0, created_at).Format(time.RFC3339),
+		}
+		result = append(result, order)
 	}
 	// Проверка на ошибки после цикла
 	if err = rows.Err(); err != nil {
