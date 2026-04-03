@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/model"
 )
@@ -32,8 +33,8 @@ func (sb *StorageBalance) GetBalanceByLogin(ctx context.Context, login string) m
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
-	result.CurrentBalance = float64(curBal) / 10000         // так как в бд храним и работаем с int преобразуем при запросе
-	result.WithdrawnBalance = float64(withdrawnBal) / 10000 // так как в бд храним и работаем с int преобразуем при запросе
+	result.CurrentBalance = float64(curBal) / config.ExchangeRateCoefficient         // так как в бд храним и работаем с int преобразуем при запросе
+	result.WithdrawnBalance = float64(withdrawnBal) / config.ExchangeRateCoefficient // так как в бд храним и работаем с int преобразуем при запросе
 	return result
 }
 

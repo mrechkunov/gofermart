@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/model"
@@ -88,7 +89,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		respOrder := model.ResponceOrders{
 			Number:     strconv.FormatInt(orderFromDB.Number, 10),
 			Status:     orderFromDB.Status,
-			Accrual:    float64(orderFromDB.Accrual) / 10000,
+			Accrual:    float64(orderFromDB.Accrual) / config.ExchangeRateCoefficient,
 			UploadedAt: time.Unix(0, orderFromDB.UploadedAt).Format(time.RFC3339),
 		}
 		respOrders = append(respOrders, respOrder)

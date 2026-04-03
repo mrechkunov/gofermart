@@ -11,6 +11,8 @@ import (
 	"github.com/mrechkunov/gofermart/interal/service"
 )
 
+const ErrUnauthorized = "401 Unauthorized"
+
 func Login(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
@@ -26,7 +28,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 	// проверяем пару логин пароль
 	if service.GetUserByLogin(r.Context(), &reqdata.Login).Password != cryptoauth.EncryptPass(reqdata.Password) {
-		http.Error(w, "401 Unauthorized", http.StatusUnauthorized)
+		http.Error(w, ErrUnauthorized, http.StatusUnauthorized)
 		return
 	}
 	// проверяем валидность текущего токена, если не валиден, генерируем новый
