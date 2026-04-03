@@ -35,7 +35,7 @@ func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGr
 			logger.Log.Warnln("error making GET request:", err)
 		}
 		if resp.StatusCode == http.StatusNoContent {
-			logger.Log.Infoln("accrual responce no content, sleep 2 sec")
+			logger.Log.Infoln("accrual response no content, sleep 2 sec")
 			time.Sleep(2 * time.Second)
 			continue
 		}

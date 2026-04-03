@@ -28,12 +28,12 @@ func (sb *StorageBalance) GetBalanceByLogin(ctx context.Context, login string) m
 	var result model.Balance
 	var curBal, withdrawnBal int64
 	err := sb.DBconnection.QueryRowContext(ctx, "SELECT user_id, current_balance, withdrawn_balance, updated_at FROM balances WHERE user_id=$1", login).
-		Scan(&result.UserID, &curBal, &withdrawnBal, &result.Updated_at)
+		Scan(&result.UserID, &curBal, &withdrawnBal, &result.UpdatedAt)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("users balance is not exist in DB")
 	}
-	result.CurrentBalance = float64(curBal) / 10000          // так как в бд храним и работаем с int преобразуем при запросе
-	result.Withdrawn_balance = float64(withdrawnBal) / 10000 // так как в бд храним и работаем с int преобразуем при запросе
+	result.CurrentBalance = float64(curBal) / 10000         // так как в бд храним и работаем с int преобразуем при запросе
+	result.WithdrawnBalance = float64(withdrawnBal) / 10000 // так как в бд храним и работаем с int преобразуем при запросе
 	return result
 }
 
@@ -59,9 +59,9 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 			logger.Log.Errorln(err)
 		}
 		order := model.TransactionWithdraw{
-			OrderNumber:  strconv.FormatInt(orderNumber, 10),
-			Sum:          float64(amount) / -10000,
-			Processed_at: time.Unix(0, created_at).Format(time.RFC3339),
+			OrderNumber: strconv.FormatInt(orderNumber, 10),
+			Sum:         float64(amount) / -10000,
+			ProcessedAt: time.Unix(0, created_at).Format(time.RFC3339),
 		}
 		result = append(result, order)
 	}

@@ -6,11 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/repository"
+	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 func Balance(w http.ResponseWriter, r *http.Request) {
@@ -25,10 +24,7 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(r.Context(), authToken).Login
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	balance := storageBalance.GetBalanceByLogin(r.Context(), login)
+	balance := service.GetBalanceByToken(r.Context(), &authToken)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ
@@ -50,9 +46,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	user := storageUsers.GetUserByToken(r.Context(), authToken)
-
+	user := service.GetUserByToken(r.Context(), &authToken)
 	// читаем тело запроса
 	var withdrawOrder model.WithdrawOrder
 	if err := json.NewDecoder(r.Body).Decode(&withdrawOrder); err != nil {
@@ -64,8 +58,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 		return
 	}
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	userCurrentBalance := storageBalance.GetBalanceByLogin(r.Context(), user.Login).CurrentBalance
+	userCurrentBalance := service.GetBalanceByToken(r.Context(), &user.Bearer).CurrentBalance
 	if withdrawOrder.Sum > userCurrentBalance {
 		http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 		return
@@ -75,7 +68,8 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
 	}
-	err = storageBalance.TransactionAdd(r.Context(), user.Login, amountInt, orderInt)
+
+	err = service.TransactionAdd(r.Context(), &user.Login, &amountInt, &orderInt)
 	if err != nil {
 		logger.Log.Errorln("error while transaction add at withdraw", err)
 	}
@@ -95,10 +89,7 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(r.Context(), authToken).Login
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	withdrawals := storageBalance.GetTransactionsByLogin(r.Context(), login)
+	withdrawals := service.GetTransactionsByToken(r.Context(), &authToken)
 	if len(withdrawals) == 0 {
 		http.Error(w, "no withdrawals in DB", http.StatusNoContent)
 		return
