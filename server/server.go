@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/logger"
 )
 
@@ -24,10 +23,10 @@ func NewServer(address string, router *chi.Mux) *ServerHTTP {
 
 // Run - метод для запуска нашего http-сервера
 func (s *ServerHTTP) Run() {
-
-	err := http.ListenAndServe(config.ConfigAddresses.ServerBindAddress, s.Router)
+	s.MyServer.Handler = s.Router
+	err := s.MyServer.ListenAndServe()
 	if err != nil {
-		logger.Log.Errorln(err)
+		logger.Log.Errorln("error while start http server")
 		return
 	}
 }
