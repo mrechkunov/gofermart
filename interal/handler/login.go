@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/logger"
@@ -19,9 +18,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var reqdata, user model.Users
-	// читаем Header Autorization и записываем его в поле token
-	user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// читаем тело запроса
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

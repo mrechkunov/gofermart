@@ -22,14 +22,6 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		user := r.Context().Value("user").(model.Users)
-		// // читаем Header Autorization и записываем его в поле token
-		// user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-		// err := cryptoauth.ValidateToken(user.Bearer)
-		// if err != nil {
-		// 	http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
-		// 	return
-		// }
-		// user = service.GetUserByToken(r.Context(), user.Bearer)
 		//читаем тело запроса
 		fmt.Println("i am here", user.Login)
 		body, err := io.ReadAll(r.Body)
@@ -72,13 +64,6 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// // читаем Header Autorization и записываем его в поле token
-	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// err := cryptoauth.ValidateToken(authToken)
-	// if err != nil {
-	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
-	// 	return
-	// }
 	user := r.Context().Value("user").(model.Users)
 	ordersFromDB := service.GetOrdersSliceByLogin(r.Context(), user.Login)
 	if len(ordersFromDB) == 0 {

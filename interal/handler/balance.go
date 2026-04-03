@@ -17,13 +17,6 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// // читаем Header Autorization и записываем его в поле token
-	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// err := cryptoauth.ValidateToken(authToken)
-	// if err != nil {
-	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
-	// 	return
-	// }
 	user := r.Context().Value("user").(model.Users)
 	balance := service.GetBalanceByLogin(r.Context(), user.Login)
 	w.Header().Set("Content-Type", "application/json")
@@ -40,13 +33,6 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// // читаем Header Autorization и записываем его в поле token
-	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// err := cryptoauth.ValidateToken(authToken)
-	// if err != nil {
-	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
-	// 	return
-	// }
 	user := r.Context().Value("user").(model.Users)
 	// читаем тело запроса
 	var withdrawOrder model.WithdrawOrder
@@ -83,14 +69,6 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// читаем Header Autorization и записываем его в поле token
-
-	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	// err := cryptoauth.ValidateToken(authToken)
-	// if err != nil {
-	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
-	// 	return
-	// }
 	user := r.Context().Value("user").(model.Users)
 	withdrawals := service.GetTransactionsByLogin(r.Context(), user.Login)
 	if len(withdrawals) == 0 {
