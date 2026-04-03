@@ -36,7 +36,6 @@ func (so *StorageOrders) GetByLogin(ctx context.Context, login string) []model.O
 	var result []model.Orders
 	sqlStatement := `SELECT o_number, o_status, o_accrual, uploaded_at, created_by FROM orders
 		WHERE created_by = $1 ORDER BY uploaded_at DESC`
-
 	rows, err := so.DBconnection.QueryContext(ctx, sqlStatement, login)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("orders created by user", login, "is not exist in DB")
@@ -75,14 +74,10 @@ func (so *StorageOrders) UpdateOrder(ctx context.Context, order model.Orders) er
 
 // добавление данных о заказе в БД
 func (so *StorageOrders) InsertOrder(ctx context.Context, order model.Orders) error {
-	err := so.DBconnection.Ping()
-	if err != nil {
-		logger.Log.Warnln(err)
-	}
 	sqlStatement := `INSERT INTO orders 
 			(o_number, o_status, o_accrual, uploaded_at, created_by) 
 			VALUES ($1, $2, $3, $4, $5)`
-	_, err = so.DBconnection.ExecContext(ctx, sqlStatement, order.Number, order.Status, order.Accrual, order.UploadedAt, order.CreatedBy)
+	_, err := so.DBconnection.ExecContext(ctx, sqlStatement, order.Number, order.Status, order.Accrual, order.UploadedAt, order.CreatedBy)
 	if err != nil {
 		logger.Log.Errorln("error while insert order to db", err)
 		return err

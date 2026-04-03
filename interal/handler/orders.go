@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -23,7 +22,6 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		}
 		user := r.Context().Value("user").(model.Users)
 		//читаем тело запроса
-		fmt.Println("i am here", user.Login)
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "body reading error", http.StatusBadRequest)

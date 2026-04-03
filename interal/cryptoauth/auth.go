@@ -1,15 +1,18 @@
 package cryptoauth
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/mrechkunov/gofermart/interal/logger"
+	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 const secretKey = "secret key"
@@ -56,6 +59,7 @@ func EncryptPass(password string) string {
 	return hex.EncodeToString(encryptedPassword)
 }
 
+// проверяет номер заказа по алгоритму Луна
 func ValidLuhnOrderNumber(num *int64) bool {
 	number := strconv.FormatInt(*num, 10)
 	// убираем все пробелы в строке
@@ -83,4 +87,24 @@ func ValidLuhnOrderNumber(num *int64) bool {
 	}
 	// номер заказа валиден если сумма делится без остатка на 10
 	return sum%10 == 0
+}
+
+// WithAuth добавляет дополнительный код для авторизации пользователя, записывает в контекст структуру авторизированного пользователя
+// и возвращает новый http.Handler.
+func WithAuth(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		err := ValidateToken(authToken)
+		if err != nil {
+			http.Error(w, "missing authorization header", http.StatusUnauthorized)
+			return
+		}
+		user := service.GetUserByToken(r.Context(), authToken)
+		if user.Login == "" {
+			http.Error(w, "wrong token", http.StatusUnauthorized)
+			return
+		}
+		r = r.WithContext(context.WithValue(r.Context(), "user", user))
+		h.ServeHTTP(w, r)
+	}
 }
