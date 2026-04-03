@@ -61,7 +61,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 		}
 		order := model.TransactionWithdraw{
 			OrderNumber: strconv.FormatInt(orderNumber, 10),
-			Sum:         float64(amount) / -10000,
+			Sum:         float64(amount) / -config.ExchangeRateCoefficient,
 			ProcessedAt: time.Unix(0, created_at).Format(time.RFC3339),
 		}
 		result = append(result, order)

@@ -17,7 +17,7 @@ var DBconn *sql.DB
 // channel to update ordersAccruals
 var ChanToUpdate = make(chan int64, 10)
 
-const ExchangeRateCoefficient float64 = 10
+const ExchangeRateCoefficient float64 = 1000
 
 type Addresses struct {
 	ServerBindAddress    string
