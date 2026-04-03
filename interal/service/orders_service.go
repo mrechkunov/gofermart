@@ -8,9 +8,9 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func GetOrderByNumber(ctx context.Context, number *int64) model.Orders {
+func GetOrderByNumber(ctx context.Context, number int64) model.Orders {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
-	return storageOrders.GetByNumber(ctx, *number)
+	return storageOrders.GetByNumber(ctx, number)
 }
 
 func InsertOrder(ctx context.Context, order *model.Orders) error {
@@ -18,9 +18,9 @@ func InsertOrder(ctx context.Context, order *model.Orders) error {
 	return storageOrders.InsertOrder(ctx, *order)
 }
 
-func GetOrdersSliceByToken(ctx context.Context, token *string) []model.Orders {
+func GetOrdersSliceByToken(ctx context.Context, token string) []model.Orders {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(ctx, *token).Login
+	login := storageUsers.GetUserByToken(ctx, token).Login
 	return storageOrders.GetByLogin(ctx, login)
 }

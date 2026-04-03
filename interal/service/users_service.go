@@ -8,14 +8,14 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func GetUserByToken(ctx context.Context, token *string) model.Users {
+func GetUserByToken(ctx context.Context, token string) model.Users {
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	return storageUsers.GetUserByToken(ctx, *token)
+	return storageUsers.GetUserByToken(ctx, token)
 }
 
-func GetUserByLogin(ctx context.Context, login *string) model.Users {
+func GetUserByLogin(ctx context.Context, login string) model.Users {
 	storageUsers := repository.NewUsersStorage(config.DBconn)
-	return storageUsers.GetUserByLogin(ctx, *login)
+	return storageUsers.GetUserByLogin(ctx, login)
 }
 
 func UpdateUser(ctx context.Context, user *model.Users) error {

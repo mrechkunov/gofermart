@@ -25,7 +25,7 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	balance := service.GetBalanceByToken(r.Context(), &authToken)
+	balance := service.GetBalanceByToken(r.Context(), authToken)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ
@@ -47,7 +47,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	user := service.GetUserByToken(r.Context(), &authToken)
+	user := service.GetUserByToken(r.Context(), authToken)
 	// читаем тело запроса
 	var withdrawOrder model.WithdrawOrder
 	if err := json.NewDecoder(r.Body).Decode(&withdrawOrder); err != nil {
@@ -59,7 +59,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 		return
 	}
-	userCurrentBalance := service.GetBalanceByToken(r.Context(), &user.Bearer).CurrentBalance
+	userCurrentBalance := service.GetBalanceByToken(r.Context(), user.Bearer).CurrentBalance
 	if withdrawOrder.Sum > userCurrentBalance {
 		http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 		return
@@ -70,7 +70,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
 	}
 
-	err = service.TransactionAdd(r.Context(), &user.Login, &amountInt, &orderInt)
+	err = service.TransactionAdd(r.Context(), user.Login, amountInt, orderInt)
 	if err != nil {
 		logger.Log.Errorln("error while transaction add at withdraw", err)
 	}
@@ -84,13 +84,14 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// читаем Header Autorization и записываем его в поле token
+
 	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	err := cryptoauth.ValidateToken(authToken)
 	if err != nil {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	withdrawals := service.GetTransactionsByToken(r.Context(), &authToken)
+	withdrawals := service.GetTransactionsByToken(r.Context(), authToken)
 	if len(withdrawals) == 0 {
 		http.Error(w, "no withdrawals in DB", http.StatusNoContent)
 		return

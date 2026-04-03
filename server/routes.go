@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/mrechkunov/gofermart/interal/compressmiddleware"
 	"github.com/mrechkunov/gofermart/interal/config"
+	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/handler"
 	"github.com/mrechkunov/gofermart/interal/logger"
 )
@@ -21,11 +22,11 @@ func NewRouter(ctx context.Context) *Router {
 }
 
 func (r *Router) RoutesInit() {
-	r.R.Get("/api/user/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet)))
-	r.R.Get("/api/user/balance", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance)))
-	r.R.Get("/api/user/withdrawals", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals)))
-	r.R.Post("/api/user/orders", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(config.ChanToUpdate))))
+	r.R.Get("/api/user/orders", cryptoauth.WithAuth(logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersGet))))
+	r.R.Get("/api/user/balance", cryptoauth.WithAuth(logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Balance))))
+	r.R.Get("/api/user/withdrawals", cryptoauth.WithAuth(logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdrawals))))
+	r.R.Post("/api/user/orders", cryptoauth.WithAuth(logger.WithLogging(compressmiddleware.GzipMiddleware(handler.OrdersPost(config.ChanToUpdate)))))
 	r.R.Post("/api/user/register", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Register)))
 	r.R.Post("/api/user/login", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Login)))
-	r.R.Post("/api/user/balance/withdraw", logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw)))
+	r.R.Post("/api/user/balance/withdraw", cryptoauth.WithAuth(logger.WithLogging(compressmiddleware.GzipMiddleware(handler.Withdraw))))
 }

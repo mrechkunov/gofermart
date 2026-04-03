@@ -23,7 +23,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем свободный ли логин если занят вернуть ошибку
-	if service.GetUserByLogin(r.Context(), &reqdata.Login).Login == reqdata.Login {
+	if service.GetUserByLogin(r.Context(), reqdata.Login).Login == reqdata.Login {
 		http.Error(w, "login "+reqdata.Login+" is exist in DB", http.StatusConflict)
 		return
 	}

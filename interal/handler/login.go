@@ -27,12 +27,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем пару логин пароль
-	if service.GetUserByLogin(r.Context(), &reqdata.Login).Password != cryptoauth.EncryptPass(reqdata.Password) {
+	if service.GetUserByLogin(r.Context(), reqdata.Login).Password != cryptoauth.EncryptPass(reqdata.Password) {
 		http.Error(w, ErrUnauthorized, http.StatusUnauthorized)
 		return
 	}
 	// проверяем валидность текущего токена, если не валиден, генерируем новый
-	if cryptoauth.ValidateToken(service.GetUserByLogin(r.Context(), &reqdata.Login).Bearer) != nil {
+	if cryptoauth.ValidateToken(service.GetUserByLogin(r.Context(), reqdata.Login).Bearer) != nil {
 		// генерируем token
 		var err error
 		user.Bearer, err = cryptoauth.GenerateToken(reqdata.Login)

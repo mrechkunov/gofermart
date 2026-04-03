@@ -29,7 +29,7 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
 			return
 		}
-		user = service.GetUserByToken(r.Context(), &user.Bearer)
+		user = service.GetUserByToken(r.Context(), user.Bearer)
 		//читаем тело запроса
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -46,7 +46,7 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		incomeOrder.CreatedBy = user.Login
 		incomeOrder.UploadedAt = time.Now().UnixNano()
 		incomeOrder.Status = "NEW"
-		orderFromDB := service.GetOrderByNumber(r.Context(), &incomeOrder.Number)
+		orderFromDB := service.GetOrderByNumber(r.Context(), incomeOrder.Number)
 		if !cryptoauth.ValidLuhnOrderNumber(&incomeOrder.Number) {
 			http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 			return
@@ -78,7 +78,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	ordersFromDB := service.GetOrdersSliceByToken(r.Context(), &authToken)
+	ordersFromDB := service.GetOrdersSliceByToken(r.Context(), authToken)
 	if len(ordersFromDB) == 0 {
 		http.Error(w, "no data in DB", http.StatusNoContent)
 		return
