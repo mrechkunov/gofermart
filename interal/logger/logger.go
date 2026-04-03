@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -74,12 +73,6 @@ func init() { // функция запускается автоматическ�
 		// вызываем панику, если ошибка
 		panic(err)
 	}
-	defer func() {
-		err := zapLogger.Sync()
-		if err != nil {
-			fmt.Println("error while zapLogger Sync in init function", err)
-		}
-	}()
 	// делаем регистратор SugaredLogger
 	Log = zapLogger.Sugar()
 }

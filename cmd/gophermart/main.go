@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"syscall"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/mrechkunov/gofermart/interal/config"
@@ -22,4 +25,9 @@ func main() {
 	server.Run()
 	close(config.ChanToUpdate)
 	config.DBconn.Close()
+
+	err := logger.Log.Sync()
+	if err != nil && !errors.Is(err, syscall.EBADF) && !errors.Is(err, syscall.ENOTTY) {
+		fmt.Println("error while zapLogger Sync in init function", err)
+	}
 }
