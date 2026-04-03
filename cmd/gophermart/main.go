@@ -16,10 +16,14 @@ func main() {
 	ctx := context.Background()
 	var router = server.NewRouter(ctx)
 	router.RoutesInit()
-	var Server = server.NewServer(&config.ConfigAddresses, router.R)
+	server := server.NewServer(config.ConfigAddresses.ServerBindAddress, router.R)
+
 	go service.UpdateOrderListener(ctx, config.ChanToUpdate)
 	logger.Log.Infoln("starting web server at:", config.ConfigAddresses.ServerBindAddress)
-	Server.Run()
+	err := server.MyServer.ListenAndServe()
+	if err != nil {
+		logger.Log.Errorln("error while start http server")
+	}
 	close(config.ChanToUpdate)
 	config.DBconn.Close()
 }
