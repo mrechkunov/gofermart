@@ -8,11 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/repository"
+	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +20,6 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 			return
 		}
-		storageUsers := repository.NewUsersStorage(config.DBconn)
 		var user model.Users
 		// читаем Header Autorization и записываем его в поле token
 		user.Bearer = strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
@@ -30,7 +28,7 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Missing Authorization Header", http.StatusUnauthorized)
 			return
 		}
-		user = storageUsers.GetUserByToken(r.Context(), user.Bearer)
+		user = service.GetUserByToken(r.Context(), &user.Bearer)
 		//читаем тело запроса
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -47,9 +45,8 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 		incomeOrder.CreatedBy = user.Login
 		incomeOrder.UploadedAt = time.Now().UnixNano()
 		incomeOrder.Status = "NEW"
-		storageOrders := repository.NewOrdersStorage(config.DBconn)
-		orderFromDB := storageOrders.GetByNumber(r.Context(), incomeOrder.Number)
-		if !cryptoauth.ValidLuhnOrderNumber(incomeOrder.Number) {
+		orderFromDB := service.GetOrderByNumber(r.Context(), &incomeOrder.Number)
+		if !cryptoauth.ValidLuhnOrderNumber(&incomeOrder.Number) {
 			http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 			return
 		}
@@ -62,7 +59,7 @@ func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		c <- incomeOrder.Number
-		storageOrders.InsertOrder(r.Context(), incomeOrder)
+		service.InsertOrder(r.Context(), &incomeOrder)
 		w.Header().Set("content-type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusAccepted)
 	}
@@ -80,11 +77,7 @@ func OrdersGet(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authorization header", http.StatusUnauthorized)
 		return
 	}
-	storageOrders := repository.NewOrdersStorage(config.DBconn)
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(r.Context(), authToken).Login
-	ordersFromDB := storageOrders.GetByLogin(r.Context(), login)
-
+	ordersFromDB := service.GetOrdersSliceByToken(r.Context(), &authToken)
 	if len(ordersFromDB) == 0 {
 		http.Error(w, "no data in DB", http.StatusNoContent)
 		return

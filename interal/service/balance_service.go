@@ -20,10 +20,7 @@ func GetTransactionsByToken(ctx context.Context, token *string) []model.Transact
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	return storageBalance.GetTransactionsByLogin(ctx, login)
 }
-func GetUserByToken(ctx context.Context, token *string) model.Users {
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	return storageUsers.GetUserByToken(ctx, *token)
-}
+
 func TransactionAdd(ctx context.Context, login *string, amount *int64, order *int64) error {
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	err := storageBalance.TransactionAdd(ctx, *login, *amount, *order)

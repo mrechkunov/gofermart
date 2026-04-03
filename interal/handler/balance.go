@@ -54,7 +54,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	incomeOrderNumber, err := strconv.ParseInt(string(withdrawOrder.Order), 10, 64)
-	if !cryptoauth.ValidLuhnOrderNumber(incomeOrderNumber) {
+	if !cryptoauth.ValidLuhnOrderNumber(&incomeOrderNumber) {
 		http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 		return
 	}

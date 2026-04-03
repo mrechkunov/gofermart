@@ -5,11 +5,10 @@ import (
 
 	"net/http"
 
-	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
 	"github.com/mrechkunov/gofermart/interal/logger"
 	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/repository"
+	"github.com/mrechkunov/gofermart/interal/service"
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +16,6 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	storageUsers := repository.NewUsersStorage(config.DBconn)
 	// читаем тело запроса
 	var reqdata, user model.Users
 	if err := json.NewDecoder(r.Body).Decode(&reqdata); err != nil {
@@ -25,7 +23,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// проверяем свободный ли логин если занят вернуть ошибку
-	if storageUsers.GetUserByLogin(r.Context(), reqdata.Login).Login == reqdata.Login {
+	if service.GetUserByLogin(r.Context(), &reqdata.Login).Login == reqdata.Login {
 		http.Error(w, "login "+reqdata.Login+" is exist in DB", http.StatusConflict)
 		return
 	}
@@ -40,9 +38,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	user.Bearer = tokenString
 	// записываем в БД данные пользователя
-	storageUsers.InsertUser(r.Context(), user)
-	storageBalance := repository.NewBalanceStorage(config.DBconn)
-	storageBalance.AddUserBalance(r.Context(), user.Login)
+	service.InsertNewUser(r.Context(), &user)
 	// формируем ответ
 	w.Header().Set("Authorization", "Bearer "+tokenString)
 	w.Header().Set("Content-Type", "application/json")
