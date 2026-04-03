@@ -11,7 +11,7 @@ import (
 // WithLogging добавляет дополнительный код для регистрации сведений о запросе
 // и возвращает новый http.Handler.
 func WithAuth(h http.HandlerFunc) http.HandlerFunc {
-	AuthFn := func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 		err := ValidateToken(authToken)
 		if err != nil {
@@ -24,6 +24,6 @@ func WithAuth(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		r = r.WithContext(context.WithValue(r.Context(), "user", user))
+		h.ServeHTTP(w, r)
 	}
-	return http.HandlerFunc(AuthFn)
 }

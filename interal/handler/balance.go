@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/mrechkunov/gofermart/interal/config"
 	"github.com/mrechkunov/gofermart/interal/cryptoauth"
@@ -18,18 +17,19 @@ func Balance(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only GET requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// читаем Header Autorization и записываем его в поле token
-	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	err := cryptoauth.ValidateToken(authToken)
-	if err != nil {
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
-	}
-	balance := service.GetBalanceByToken(r.Context(), authToken)
+	// // читаем Header Autorization и записываем его в поле token
+	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	// err := cryptoauth.ValidateToken(authToken)
+	// if err != nil {
+	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
+	// 	return
+	// }
+	user := r.Context().Value("user").(model.Users)
+	balance := service.GetBalanceByLogin(r.Context(), user.Login)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ
-	err = json.NewEncoder(w).Encode(balance)
+	err := json.NewEncoder(w).Encode(balance)
 	if err != nil {
 		logger.Log.Warnln("error while encoding json in balance handler", err)
 	}
@@ -40,14 +40,14 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Only POST requests are allowed!", http.StatusBadRequest)
 		return
 	}
-	// читаем Header Autorization и записываем его в поле token
-	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	err := cryptoauth.ValidateToken(authToken)
-	if err != nil {
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
-	}
-	user := service.GetUserByToken(r.Context(), authToken)
+	// // читаем Header Autorization и записываем его в поле token
+	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	// err := cryptoauth.ValidateToken(authToken)
+	// if err != nil {
+	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
+	// 	return
+	// }
+	user := r.Context().Value("user").(model.Users)
 	// читаем тело запроса
 	var withdrawOrder model.WithdrawOrder
 	if err := json.NewDecoder(r.Body).Decode(&withdrawOrder); err != nil {
@@ -59,7 +59,7 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error invalid order number format", http.StatusUnprocessableEntity)
 		return
 	}
-	userCurrentBalance := service.GetBalanceByToken(r.Context(), user.Bearer).CurrentBalance
+	userCurrentBalance := service.GetBalanceByLogin(r.Context(), user.Login).CurrentBalance
 	if withdrawOrder.Sum > userCurrentBalance {
 		http.Error(w, "error insufficient funds in the account", http.StatusPaymentRequired)
 		return
@@ -85,13 +85,14 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 	}
 	// читаем Header Autorization и записываем его в поле token
 
-	authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-	err := cryptoauth.ValidateToken(authToken)
-	if err != nil {
-		http.Error(w, "missing authorization header", http.StatusUnauthorized)
-		return
-	}
-	withdrawals := service.GetTransactionsByToken(r.Context(), authToken)
+	// authToken := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	// err := cryptoauth.ValidateToken(authToken)
+	// if err != nil {
+	// 	http.Error(w, "missing authorization header", http.StatusUnauthorized)
+	// 	return
+	// }
+	user := r.Context().Value("user").(model.Users)
+	withdrawals := service.GetTransactionsByLogin(r.Context(), user.Login)
 	if len(withdrawals) == 0 {
 		http.Error(w, "no withdrawals in DB", http.StatusNoContent)
 		return
@@ -99,7 +100,7 @@ func Withdrawals(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	// записываем ответ
-	err = json.NewEncoder(w).Encode(withdrawals)
+	err := json.NewEncoder(w).Encode(withdrawals)
 	if err != nil {
 		logger.Log.Warnln("error while encoding json in withdrawals handler", err)
 	}

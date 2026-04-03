@@ -8,15 +8,11 @@ import (
 	"github.com/mrechkunov/gofermart/interal/repository"
 )
 
-func GetBalanceByToken(ctx context.Context, token string) model.Balance {
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(ctx, token).Login
+func GetBalanceByLogin(ctx context.Context, login string) model.Balance {
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	return storageBalance.GetBalanceByLogin(ctx, login)
 }
-func GetTransactionsByToken(ctx context.Context, token string) []model.TransactionWithdraw {
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(ctx, token).Login
+func GetTransactionsByLogin(ctx context.Context, login string) []model.TransactionWithdraw {
 	storageBalance := repository.NewBalanceStorage(config.DBconn)
 	return storageBalance.GetTransactionsByLogin(ctx, login)
 }

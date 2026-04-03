@@ -18,9 +18,7 @@ func InsertOrder(ctx context.Context, order *model.Orders) error {
 	return storageOrders.InsertOrder(ctx, *order)
 }
 
-func GetOrdersSliceByToken(ctx context.Context, token string) []model.Orders {
+func GetOrdersSliceByLogin(ctx context.Context, login string) []model.Orders {
 	storageOrders := repository.NewOrdersStorage(config.DBconn)
-	storageUsers := repository.NewUsersStorage(config.DBconn)
-	login := storageUsers.GetUserByToken(ctx, token).Login
 	return storageOrders.GetByLogin(ctx, login)
 }
