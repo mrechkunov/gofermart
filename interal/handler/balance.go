@@ -55,7 +55,6 @@ func Withdraw(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Log.Errorln("error while convert order number fron string to int64 (withdraw)")
 	}
-
 	err = service.TransactionAdd(r.Context(), user.Login, amountInt, orderInt)
 	if err != nil {
 		logger.Log.Errorln("error while transaction add at withdraw", err)

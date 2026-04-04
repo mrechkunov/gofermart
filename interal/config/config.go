@@ -17,6 +17,7 @@ var DBconn *sql.DB
 // channel to update ordersAccruals
 var ChanToUpdate = make(chan int64, 10)
 
+// константа для перевода суммы балов в копейки для хранения в БД
 const ExchangeRateCoefficient float64 = 1000
 
 type Addresses struct {

@@ -23,7 +23,7 @@ func NewOrdersStorage(DBconn *sql.DB) StorageOrders {
 func (so *StorageOrders) GetByNumber(ctx context.Context, number int64) model.Orders {
 	var result model.Orders
 	sqlStatement := `SELECT o_number, o_status, o_accrual, uploaded_at, created_by FROM orders
-		WHERE o_number = $1`
+				WHERE o_number = $1`
 	err := so.DBconnection.QueryRowContext(ctx, sqlStatement, number).Scan(&result.Number, &result.Status, &result.Accrual, &result.UploadedAt, &result.CreatedBy)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("order №", number, "is not exist in DB")
@@ -35,7 +35,7 @@ func (so *StorageOrders) GetByNumber(ctx context.Context, number int64) model.Or
 func (so *StorageOrders) GetByLogin(ctx context.Context, login string) []model.Orders {
 	var result []model.Orders
 	sqlStatement := `SELECT o_number, o_status, o_accrual, uploaded_at, created_by FROM orders
-		WHERE created_by = $1 ORDER BY uploaded_at DESC`
+				WHERE created_by = $1 ORDER BY uploaded_at DESC`
 	rows, err := so.DBconnection.QueryContext(ctx, sqlStatement, login)
 	if err == sql.ErrNoRows {
 		logger.Log.Infoln("orders created by user", login, "is not exist in DB")
@@ -61,9 +61,9 @@ func (so *StorageOrders) GetByLogin(ctx context.Context, login string) []model.O
 // обновление данных в БД
 func (so *StorageOrders) UpdateOrder(ctx context.Context, order model.Orders) error {
 	sqlStatement := `UPDATE orders 
-		SET o_status = $1,
-			o_accrual = $2
-		WHERE o_number = $3;`
+				SET o_status = $1,
+				o_accrual = $2
+				WHERE o_number = $3;`
 	_, err := so.DBconnection.ExecContext(ctx, sqlStatement, order.Status, order.Accrual, order.Number)
 	if err != nil {
 		logger.Log.Errorln("error while update order in DB", err)
@@ -74,9 +74,8 @@ func (so *StorageOrders) UpdateOrder(ctx context.Context, order model.Orders) er
 
 // добавление данных о заказе в БД
 func (so *StorageOrders) InsertOrder(ctx context.Context, order model.Orders) error {
-	sqlStatement := `INSERT INTO orders 
-			(o_number, o_status, o_accrual, uploaded_at, created_by) 
-			VALUES ($1, $2, $3, $4, $5)`
+	sqlStatement := `INSERT INTO orders (o_number, o_status, o_accrual, uploaded_at, created_by) 
+				VALUES ($1, $2, $3, $4, $5)`
 	_, err := so.DBconnection.ExecContext(ctx, sqlStatement, order.Number, order.Status, order.Accrual, order.UploadedAt, order.CreatedBy)
 	if err != nil {
 		logger.Log.Errorln("error while insert order to db", err)

@@ -42,7 +42,7 @@ func (sb *StorageBalance) GetBalanceByLogin(ctx context.Context, login string) m
 func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login string) []model.TransactionWithdraw {
 	var result []model.TransactionWithdraw
 	sqlStatement := `SELECT order_id, amount, created_at FROM transactions
-		WHERE user_id = $1 AND withdraw is true ORDER BY created_at DESC`
+				WHERE user_id = $1 AND withdraw is true ORDER BY created_at DESC`
 
 	rows, err := sb.DBconnection.QueryContext(ctx, sqlStatement, login)
 	if err == sql.ErrNoRows {
@@ -76,7 +76,7 @@ func (sb *StorageBalance) GetTransactionsByLogin(ctx context.Context, login stri
 // добавление данных в БД
 func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amount int64, orderID int64) error {
 	//Начало
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 	tx, err := sb.DBconnection.BeginTx(ctxWithTimeout, nil)
 	if err != nil {
@@ -103,23 +103,21 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	if amount <= 0 {
 		withdraw = true
 	}
-	sqlStatementTransactions := `INSERT INTO transactions 
-			(user_id, t_id, amount, order_id, created_at, withdraw) 
-			VALUES ($1, $2, $3, $4, $5, $6)`
+	sqlStatementTransactions := `INSERT INTO transactions (user_id, t_id, amount, order_id, created_at, withdraw) 
+							VALUES ($1, $2, $3, $4, $5, $6)`
 	_, err = tx.ExecContext(ctxWithTimeout, sqlStatementTransactions, userID, t_id, amount, orderID, created_at, withdraw)
 	if err != nil {
 		logger.Log.Infoln("error while insert transaction", err)
 		return err // Rollback
 	}
 
-	// ----------------------------------
 	// апдейт таблицы с балансом
 	// подготовка данных
-	// если amount отрицательный то делаем два апдейта
+	// если amount отрицательный то делаем апдейт двух полей
 	sqlStatementBalance := `UPDATE balances 
-				SET current_balance = current_balance + $1,
-				updated_at = $2 
-				WHERE user_id = $3;`
+						SET current_balance = current_balance + $1,
+						updated_at = $2 
+						WHERE user_id = $3;`
 	_, err = tx.ExecContext(ctxWithTimeout, sqlStatementBalance, amount, created_at, userID)
 	if err != nil {
 		logger.Log.Infoln("error while update balance", err)
@@ -129,9 +127,9 @@ func (sb *StorageBalance) TransactionAdd(ctx context.Context, userID string, amo
 	if amount < 0 {
 		amountIntABS := amount * -1
 		sqlStatementBalance := `UPDATE balances
-				SET withdrawn_balance = withdrawn_balance + $1,
-				updated_at = $2
-				WHERE user_id = $3;`
+							SET withdrawn_balance = withdrawn_balance + $1,
+							updated_at = $2
+							WHERE user_id = $3;`
 		_, err = tx.ExecContext(ctxWithTimeout, sqlStatementBalance, amountIntABS, created_at, userID)
 		if err != nil {
 			logger.Log.Infoln("error while update withdrawn_balance", err)
@@ -151,9 +149,8 @@ func (sb *StorageBalance) AddUserBalance(ctx context.Context, login string) erro
 	currentBalance := 0
 	withdrawnBalance := 0
 	updated_at := time.Now().UnixNano()
-	sqlStatement := `INSERT INTO balances
-			(user_id, current_balance, withdrawn_balance, updated_at) 
-			VALUES ($1, $2, $3, $4)`
+	sqlStatement := `INSERT INTO balances (user_id, current_balance, withdrawn_balance, updated_at) 
+				VALUES ($1, $2, $3, $4)`
 	_, err := sb.DBconnection.ExecContext(ctx, sqlStatement, login, currentBalance, withdrawnBalance, updated_at)
 	if err != nil {
 		logger.Log.Errorln("error while insert new user`s balance to db", err)

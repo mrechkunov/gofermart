@@ -43,8 +43,8 @@ func (su *StorageUsers) GetUserByToken(ctx context.Context, token string) model.
 // обновление данных в БД
 func (su *StorageUsers) UpdateUser(ctx context.Context, user model.Users) error {
 	sqlStatement := `UPDATE users 
-		SET u_bearer = $1
-		WHERE u_login = $2;`
+				SET u_bearer = $1
+				WHERE u_login = $2;`
 	_, err := su.DBconnection.ExecContext(ctx, sqlStatement, user.Bearer, user.Login)
 	if err != nil {
 		logger.Log.Errorln("error while update user token in DB", err)
@@ -57,9 +57,8 @@ func (su *StorageUsers) UpdateUser(ctx context.Context, user model.Users) error 
 func (su *StorageUsers) InsertUser(ctx context.Context, user model.Users) error {
 	ctxWithTimeout, cancel := context.WithTimeout(ctx, 1*time.Second)
 	defer cancel()
-	sqlStatement := `INSERT INTO users 
-			(u_login, u_password, u_bearer) 
-			VALUES ($1, $2, $3)`
+	sqlStatement := `INSERT INTO users (u_login, u_password, u_bearer) 
+				VALUES ($1, $2, $3)`
 	_, err := su.DBconnection.ExecContext(ctxWithTimeout, sqlStatement, user.Login, user.Password, user.Bearer)
 	if err != nil {
 		logger.Log.Errorln("error while insert user to DB", err)
