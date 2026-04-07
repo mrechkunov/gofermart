@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/mrechkunov/gofermart/interal/config"
-	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/repository"
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/model"
+	"github.com/mrechkunov/gofermart/internal/repository"
 )
 
 func GetUserByToken(ctx context.Context, token string) model.Users {

@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mrechkunov/gofermart/interal/config"
-	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/repository"
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/model"
+	"github.com/mrechkunov/gofermart/internal/repository"
 )
 
 func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {

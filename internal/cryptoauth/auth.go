@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/service"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/service"
 )
 
 const secretKey = "secret key"

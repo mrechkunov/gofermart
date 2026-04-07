@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mrechkunov/gofermart/interal/compressmiddleware"
-	"github.com/mrechkunov/gofermart/interal/config"
-	"github.com/mrechkunov/gofermart/interal/cryptoauth"
-	"github.com/mrechkunov/gofermart/interal/handler"
-	"github.com/mrechkunov/gofermart/interal/logger"
+	"github.com/mrechkunov/gofermart/internal/compressmiddleware"
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/cryptoauth"
+	"github.com/mrechkunov/gofermart/internal/handler"
+	"github.com/mrechkunov/gofermart/internal/logger"
 )
 
 // Router - структура routera

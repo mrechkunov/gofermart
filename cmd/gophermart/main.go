@@ -7,9 +7,9 @@ import (
 	"syscall"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/mrechkunov/gofermart/interal/config"
-	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/service"
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/service"
 	"github.com/mrechkunov/gofermart/server"
 )
 

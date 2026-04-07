@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/mrechkunov/gofermart/interal/config"
-	"github.com/mrechkunov/gofermart/interal/cryptoauth"
-	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/model"
-	"github.com/mrechkunov/gofermart/interal/service"
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/cryptoauth"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/model"
+	"github.com/mrechkunov/gofermart/internal/service"
 )
 
 func OrdersPost(c chan int64) func(w http.ResponseWriter, r *http.Request) {

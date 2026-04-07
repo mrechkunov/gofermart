@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/mrechkunov/gofermart/interal/logger"
+	"github.com/mrechkunov/gofermart/internal/logger"
 )
 
 // Server - структура сервера

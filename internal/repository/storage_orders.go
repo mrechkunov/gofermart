@@ -6,8 +6,8 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/mrechkunov/gofermart/interal/logger"
-	"github.com/mrechkunov/gofermart/interal/model"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/model"
 )
 
 type StorageOrders struct {
