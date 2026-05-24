@@ -1,0 +1,27 @@
+package model
+
+type Orders struct { // все данные по заказу
+	Number     int64  `json:"number"`
+	Status     string `json:"status"`
+	Accrual    int64  `json:"accrual,omitempty"`
+	UploadedAt int64  `json:"uploaded_at"`
+	CreatedBy  string `json:"created_by"`
+}
+
+type AccrualOrder struct { // то что отдает сервис accrual
+	Order   string  `json:"order"`
+	Status  string  `json:"status"`
+	Accrual float64 `json:"accrual,omitempty"`
+}
+
+type ResponceOrders struct { // то что отдает наш сервис по запросу Get Orders
+	Number     string  `json:"number"`
+	Status     string  `json:"status"`
+	Accrual    float64 `json:"accrual,omitempty"`
+	UploadedAt string  `json:"uploaded_at"`
+}
+
+type WithdrawOrder struct {
+	Order string  `json:"order"`
+	Sum   float64 `json:"sum"`
+}

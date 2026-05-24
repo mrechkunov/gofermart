@@ -1,0 +1,89 @@
+package service
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/mrechkunov/gofermart/internal/config"
+	"github.com/mrechkunov/gofermart/internal/logger"
+	"github.com/mrechkunov/gofermart/internal/model"
+	"github.com/mrechkunov/gofermart/internal/repository"
+)
+
+func UpdateOrderListener(ctx context.Context, chanToUpdate chan int64) {
+	// создаем группу
+	var wg sync.WaitGroup
+	for orderNumber := range chanToUpdate {
+		wg.Add(1)                                          // добавляем в группу запуск горутины
+		go UpdateOrderAccrualWorker(ctx, orderNumber, &wg) // запускаем горутину на апдейт до конечных статусов
+	}
+	// ждем всех из группы
+	wg.Wait()
+}
+
+func UpdateOrderAccrualWorker(ctx context.Context, number int64, wg *sync.WaitGroup) {
+	defer wg.Done() // сообщим в группу что мы закончили, когда закончим
+	url := config.ConfigAddresses.AccuralSystemAddress + "/api/orders/" + strconv.FormatInt(number, 10)
+	isDone := false // это что бы
+	for !isDone {
+		resp, err := http.Get(url)
+		if err != nil {
+			logger.Log.Warnln("error making GET request:", err)
+		}
+		if resp.StatusCode == http.StatusNoContent {
+			logger.Log.Infoln("accrual response no content, sleep 2 sec")
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		if resp.StatusCode == http.StatusTooManyRequests {
+			tts := resp.Header.Get("Retry-After")
+			timeToSleep, err := strconv.Atoi(tts)
+			if err != nil {
+				logger.Log.Warnln("error while convert Retry-After string to int")
+			}
+			time.Sleep(time.Duration(timeToSleep) * time.Second)
+			logger.Log.Infoln("accrual responce to many requests, sleep", timeToSleep, " sec")
+			continue
+		}
+		if resp.StatusCode != http.StatusOK {
+			logger.Log.Infoln("API request failed with status:", resp.Status)
+			continue
+		}
+		var respOrder model.AccrualOrder
+		err = json.NewDecoder(resp.Body).Decode(&respOrder)
+		if err != nil {
+			logger.Log.Warnln("error decoding JSON:", err)
+		}
+		resp.Body.Close()
+		if respOrder.Status == "PROCESSED" || respOrder.Status == "INVALID" {
+			isDone = true
+		}
+		var order model.Orders
+		order.Number, err = strconv.ParseInt(respOrder.Order, 10, 64)
+		if err != nil {
+			logger.Log.Infoln("error while conver order number from string to int64(updateOrderAccrualWorker)", err)
+		}
+		if respOrder.Status != "REGISTERED" {
+			order.Status = respOrder.Status
+		}
+		storageOrders := repository.NewOrdersStorage(config.DBconn)
+		order.CreatedBy = storageOrders.GetByNumber(ctx, order.Number).CreatedBy
+		order.Accrual = int64(respOrder.Accrual * config.ExchangeRateCoefficient) // храним в БД сумму в копейках
+		if order.Accrual > 0 {
+			storageBalance := repository.NewBalanceStorage(config.DBconn)
+			err := storageBalance.TransactionAdd(ctx, order.CreatedBy, order.Accrual, order.Number)
+			if err != nil {
+				logger.Log.Warnln("error while transaction add at order update", err)
+			}
+		}
+		err = storageOrders.UpdateOrder(ctx, order)
+		if err != nil {
+			logger.Log.Warnln("error while update order in DB(UpdateOrderAccrualWorker)", err)
+		}
+
+	}
+}
